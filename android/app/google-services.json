@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "350364495319",
+    "project_id": "say-to-muavia",
+    "storage_bucket": "say-to-muavia.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:350364495319:android:221c285e2c7f04948aaf92",
+        "android_client_info": {
+          "package_name": "com.example.say_anything_to_muavia"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBxk7vILaAw_Nvh4oq4OrJMVZ5WvxmaYjA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:350364495319:android:97dff1b176f12f468aaf92",
+        "android_client_info": {
+          "package_name": "come.example.say_anything_to_muavia"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBxk7vILaAw_Nvh4oq4OrJMVZ5WvxmaYjA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
