@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:email_otp/email_otp.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -67,27 +65,34 @@ class _SignupScreenViewState extends State<SignupScreenView>
     });
   }
 
-  _signup() async {
-    String emailText = email.text.trim();
-    String passwordText = password.text.trim();
-    String nameText = name.text.trim();
+  Future<void> navigateToOtpPage(
+      BuildContext context, String email, String password) {
+    return Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) => OtpScreenView(
+          email: email,
+          password: password,
+        ),
+      ),
+      (Route<dynamic> route) => false,
+    );
+  }
 
-    if (!_validateEmail(emailText)) {
-      _showError("Invalid email address.");
-      return;
-    }
-
-    if (!_validatePassword(passwordText)) {
-      _showError("Password must be at least 6 characters.");
-      return;
-    }
-
+  Future<void> _signup() async {
     try {
-      await _auth.createUserWithEmailAndPassword(
-        email: emailText,
-        password: passwordText,
-      );
-      log("User Created Successfully");
+      String emailText = email.text.trim();
+      String passwordText = password.text.trim();
+
+      if (!_validateEmail(emailText)) {
+        _showError("Invalid email address.");
+        return;
+      }
+
+      if (!_validatePassword(passwordText)) {
+        _showError("Password must be at least 6 characters.");
+        return;
+      }
 
       // Configure EmailOTP
       myAuth.setConfig(
@@ -98,10 +103,15 @@ class _SignupScreenViewState extends State<SignupScreenView>
         otpType: OTPType.digitsOnly,
       );
 
-      await myAuth.sendOTP();
-      navigateToOtpPage(context);
+      bool otpSent = await myAuth.sendOTP();
+      if (otpSent) {
+        navigateToOtpPage(context, emailText, passwordText);
+      } else {
+        _showError("Failed to send OTP.");
+      }
     } catch (e) {
       _showError("Failed to create user: ${e.toString()}");
+      print(e);
     }
   }
 
@@ -212,14 +222,4 @@ class _SignupScreenViewState extends State<SignupScreenView>
       ),
     );
   }
-}
-
-Future<void> navigateToOtpPage(BuildContext context) {
-  return Navigator.pushAndRemoveUntil(
-    context,
-    MaterialPageRoute<void>(
-      builder: (BuildContext context) => const OtpScreenView(),
-    ),
-    (Route<dynamic> route) => false,
-  );
 }

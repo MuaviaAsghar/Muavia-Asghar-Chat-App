@@ -1,13 +1,23 @@
+import 'dart:developer';
+
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:email_otp/email_otp.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:say_anything_to_muavia/Login/login_screen_view.dart';
 
+import '../authentication/auth.dart';
 import '../widgets/text_fields.dart';
 
 class OtpScreenView extends StatefulWidget {
-  const OtpScreenView({super.key});
+  final String email;
+  final String password;
+
+  const OtpScreenView({
+    super.key,
+    required this.email,
+    required this.password,
+  });
 
   @override
   State<OtpScreenView> createState() => _OtpScreenViewState();
@@ -16,18 +26,16 @@ class OtpScreenView extends StatefulWidget {
 class _OtpScreenViewState extends State<OtpScreenView>
     with WidgetsBindingObserver {
   final TextEditingController otp = TextEditingController();
-
   final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
       GlobalKey<ScaffoldMessengerState>();
   final EmailOTP myAuth = EmailOTP();
   final FocusNode _otpFocus = FocusNode();
-
+  final _auth = AuthService();
   bool _isKeyboardVisible = false;
 
   @override
   void initState() {
     super.initState();
-
     _otpFocus.addListener(_updateKeyboardVisibility);
     WidgetsBinding.instance.addObserver(this);
   }
@@ -35,7 +43,6 @@ class _OtpScreenViewState extends State<OtpScreenView>
   @override
   void dispose() {
     _otpFocus.removeListener(_updateKeyboardVisibility);
-
     _otpFocus.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
@@ -64,6 +71,24 @@ class _OtpScreenViewState extends State<OtpScreenView>
     );
   }
 
+  Future<void> verifyOtp() async {
+    try {
+      await myAuth.verifyOTP(otp: otp.text);
+      await _auth.createUserWithEmailAndPassword(
+        context,
+        email: widget.email,
+        password: widget.password,
+      );
+      navigateToLoginPage(context);
+      log("User Created Successfully");
+
+      _showError("Invalid OTP");
+    } catch (e) {
+      _showError("Failed to verify OTP: ${e.toString()}");
+      print(e);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -86,15 +111,15 @@ class _OtpScreenViewState extends State<OtpScreenView>
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     CustomTextField(
-                      type: 'number',
+                      type: 'otp',
                       hint: "One Time Password",
-                      label: 'Email',
+                      label: 'OTP',
                       controller: otp,
                       focusNode: _otpFocus,
                     ),
                     const Gap(10),
                     GestureDetector(
-                      onTap: () => myAuth.verifyOTP(otp: otp),
+                      onTap: () => verifyOtp(),
                       child: Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
@@ -140,7 +165,7 @@ class _OtpScreenViewState extends State<OtpScreenView>
   }
 }
 
-Future<void> navigateToOtpPage(BuildContext context) {
+Future<void> navigateToLoginPage(BuildContext context) {
   return Navigator.pushAndRemoveUntil(
     context,
     MaterialPageRoute<void>(

@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 class AuthService {
   final _auth = FirebaseAuth.instance;
 
-  Future<User?> createUserWithEmailAndPassword(
-      BuildContext context, String email, String password) async {
+  Future<User?> createUserWithEmailAndPassword(BuildContext context,
+      {required email, required password}) async {
     try {
       final cred = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);

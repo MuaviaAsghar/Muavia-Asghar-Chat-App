@@ -15,14 +15,11 @@ class _HomeScreenViewState extends State<HomeScreenView> {
   final _auth = AuthService();
 
   Future<void> _logout(BuildContext context) async {
-    // Clear saved credentials
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
 
-    // Sign out from Firebase
     await _auth.signout(context);
 
-    // Navigate to login screen
     navigateToLogin(context);
   }
 
@@ -43,8 +40,54 @@ class _HomeScreenViewState extends State<HomeScreenView> {
         title: const Text("Home"),
       ),
       drawer: Drawer(
-        child: IconButton(
-            onPressed: () => _logout(context), icon: const Icon(Icons.logout)),
+        child: Column(
+          children: [
+            const UserAccountsDrawerHeader(
+              decoration: BoxDecoration(color: Colors.black),
+              accountName: Text(
+                "Abhishek Mishra",
+                style: TextStyle(fontSize: 18),
+              ),
+              accountEmail: Text("abhishekm977@gmail.com"),
+              currentAccountPictureSize: Size.square(50),
+              currentAccountPicture: CircleAvatar(
+                child: Text('A'),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.person),
+              title: const Text('My Profile'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.workspace_premium),
+              title: const Text('Go Premium'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.edit),
+              title: const Text('Edit Profile'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            const Spacer(), // This pushes the following ListTile to the bottom
+            Padding(
+              padding: const EdgeInsets.only(bottom: 20),
+              child: ListTile(
+                leading: const Icon(Icons.logout),
+                title: const Text('LogOut'),
+                onTap: () {
+                  _logout(context);
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
