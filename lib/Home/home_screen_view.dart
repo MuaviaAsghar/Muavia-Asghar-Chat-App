@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:say_anything_to_muavia/Login/login_screen_view.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-import '../authentication/auth.dart';
+import 'home_screen_model.dart';
 
 class HomeScreenView extends StatefulWidget {
   const HomeScreenView({super.key});
@@ -12,19 +11,16 @@ class HomeScreenView extends StatefulWidget {
 }
 
 class _HomeScreenViewState extends State<HomeScreenView> {
-  final _auth = AuthService();
+  late HomeScreenModel model;
 
-  Future<void> _logout(BuildContext context) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
-
-    await _auth.signout(context);
-
-    navigateToLogin(context);
+  @override
+  void initState() {
+    super.initState();
+    model = HomeScreenModel();
   }
 
-  Future<void> navigateToLogin(BuildContext context) {
-    return Navigator.pushAndRemoveUntil(
+  void navigateToLogin() {
+    Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute<void>(
         builder: (BuildContext context) => const LoginScreenView(),
@@ -37,7 +33,8 @@ class _HomeScreenViewState extends State<HomeScreenView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Home"),
+        title: const Text("ChatApp"),
+        centerTitle: true,
       ),
       drawer: Drawer(
         child: Column(
@@ -82,7 +79,7 @@ class _HomeScreenViewState extends State<HomeScreenView> {
                 leading: const Icon(Icons.logout),
                 title: const Text('LogOut'),
                 onTap: () {
-                  _logout(context);
+                  model.logout(context, navigateToLogin);
                 },
               ),
             ),

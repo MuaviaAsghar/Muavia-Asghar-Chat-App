@@ -1,14 +1,11 @@
-import 'dart:developer';
-
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:say_anything_to_muavia/Home/home_screen_view.dart';
 import 'package:say_anything_to_muavia/Signup/signup_screen_view.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-import '../authentication/auth.dart';
 import '../widgets/text_fields.dart';
+import 'login_screen_model.dart';
 
 class LoginScreenView extends StatefulWidget {
   const LoginScreenView({super.key});
@@ -19,96 +16,69 @@ class LoginScreenView extends StatefulWidget {
 
 class _LoginScreenViewState extends State<LoginScreenView>
     with WidgetsBindingObserver {
-  TextEditingController email = TextEditingController();
-  TextEditingController password = TextEditingController();
-  final _auth = AuthService();
-
-  final FocusNode _emailFocus = FocusNode();
-  final FocusNode _passwordFocus = FocusNode();
-  bool _isKeyboardVisible = false;
-  bool _rememberMe = false;
+  late LoginScreenModel model;
 
   @override
   void initState() {
     super.initState();
-    _emailFocus.addListener(_updateKeyboardVisibility);
-    _passwordFocus.addListener(_updateKeyboardVisibility);
-    _loadSavedCredentials();
+    model = LoginScreenModel();
+    model.emailFocus.addListener(_updateKeyboardVisibility);
+    model.passwordFocus.addListener(_updateKeyboardVisibility);
+    model.loadSavedCredentials(_updateCredentials);
 
     WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void dispose() {
-    _emailFocus.removeListener(_updateKeyboardVisibility);
-    _passwordFocus.removeListener(_updateKeyboardVisibility);
-    _emailFocus.dispose();
-    _passwordFocus.dispose();
+    model.emailFocus.removeListener(_updateKeyboardVisibility);
+    model.passwordFocus.removeListener(_updateKeyboardVisibility);
+    model.emailFocus.dispose();
+    model.passwordFocus.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  void _updateKeyboardVisibility() {
+    setState(() {
+      model.isKeyboardVisible =
+          model.emailFocus.hasFocus || model.passwordFocus.hasFocus;
+    });
   }
 
   @override
   void didChangeMetrics() {
     final bottomInset = WidgetsBinding.instance.window.viewInsets.bottom;
     setState(() {
-      _isKeyboardVisible = bottomInset > 0;
+      model.isKeyboardVisible = bottomInset > 0;
     });
   }
 
-  void _updateKeyboardVisibility() {
+  void _updateCredentials(String email, String password, bool rememberMe) {
     setState(() {
-      _isKeyboardVisible = _emailFocus.hasFocus || _passwordFocus.hasFocus;
+      model.email.text = email;
+      model.password.text = password;
+      model.rememberMe = rememberMe;
     });
   }
 
-  void _loadSavedCredentials() async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedEmail = prefs.getString('email') ?? '';
-    final savedPassword = prefs.getString('password') ?? '';
-    final rememberMe = prefs.getBool('remember_me') ?? false;
-
-    if (rememberMe) {
-      setState(() {
-        email.text = savedEmail;
-        password.text = savedPassword;
-        _rememberMe = rememberMe;
-      });
-    }
-  }
-
-  void _saveCredentials() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('email', email.text);
-    await prefs.setString('password', password.text);
-    await prefs.setBool('remember_me', _rememberMe);
-  }
-
-  void _clearCredentials() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('email');
-    await prefs.remove('password');
-    await prefs.setBool('remember_me', _rememberMe);
-  }
-
-  _login() async {
-    final user = await _auth.loginUserWithEmailAndPassword(
+  void navigateToHomePage() {
+    Navigator.pushAndRemoveUntil(
       context,
-      email.text,
-      password.text,
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) => const HomeScreenView(),
+      ),
+      (Route<dynamic> route) => false,
     );
+  }
 
-    if (user != null) {
-      log("User Logged In");
-      if (_rememberMe) {
-        _saveCredentials();
-      } else {
-        _clearCredentials();
-      }
-      navigateToHomePage(context);
-    } else {
-      // Handle login error
-    }
+  Future<void> navigateToSignupPage() {
+    return Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) => const SignupScreenView(),
+      ),
+    );
   }
 
   @override
@@ -117,7 +87,7 @@ class _LoginScreenViewState extends State<LoginScreenView>
       child: Scaffold(
         appBar: AppBar(
           title: const Text(
-            "AMA",
+            "ChatApp",
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           centerTitle: true,
@@ -136,26 +106,26 @@ class _LoginScreenViewState extends State<LoginScreenView>
                       type: 'email',
                       hint: "Enter Your Email",
                       label: 'Email',
-                      controller: email,
-                      focusNode: _emailFocus,
+                      controller: model.email,
+                      focusNode: model.emailFocus,
                     ),
                     const Gap(20),
                     CustomTextField(
                       type: 'password',
                       hint: "Enter Your Password",
                       label: 'Password',
-                      controller: password,
-                      focusNode: _passwordFocus,
+                      controller: model.password,
+                      focusNode: model.passwordFocus,
                     ),
                     const Gap(10),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         Checkbox(
-                          value: _rememberMe,
+                          value: model.rememberMe,
                           onChanged: (value) {
                             setState(() {
-                              _rememberMe = value!;
+                              model.rememberMe = value!;
                             });
                           },
                         ),
@@ -164,7 +134,7 @@ class _LoginScreenViewState extends State<LoginScreenView>
                     ),
                     const Gap(10),
                     GestureDetector(
-                      onTap: () => _login(),
+                      onTap: () => model.login(context, navigateToHomePage),
                       child: Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
@@ -194,7 +164,7 @@ class _LoginScreenViewState extends State<LoginScreenView>
                     InkWell(
                       child: TextButton(
                         onPressed: () {
-                          navigateToSignupPage(context);
+                          navigateToSignupPage();
                         },
                         child: const Text(
                           ' SIGN-UP NOW',
@@ -209,7 +179,7 @@ class _LoginScreenViewState extends State<LoginScreenView>
                 ),
               ),
             ),
-            if (!_isKeyboardVisible)
+            if (!model.isKeyboardVisible)
               Positioned(
                 top: MediaQuery.of(context).size.height * 0.10,
                 left: 20,
@@ -234,23 +204,4 @@ class _LoginScreenViewState extends State<LoginScreenView>
       ),
     );
   }
-}
-
-Future<void> navigateToSignupPage(BuildContext context) {
-  return Navigator.push(
-    context,
-    MaterialPageRoute<void>(
-      builder: (BuildContext context) => const SignupScreenView(),
-    ),
-  );
-}
-
-Future<void> navigateToHomePage(BuildContext context) {
-  return Navigator.pushAndRemoveUntil(
-    context,
-    MaterialPageRoute<void>(
-      builder: (BuildContext context) => const HomeScreenView(),
-    ),
-    (Route<dynamic> route) => false,
-  );
 }

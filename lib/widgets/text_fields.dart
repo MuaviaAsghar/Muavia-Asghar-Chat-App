@@ -66,6 +66,12 @@ class _CustomTextFieldState extends State<CustomTextField> {
         decoration: inputDecoration,
         keyboardType: TextInputType.name,
       );
+    } else if (widget.type == 'otp') {
+      return TextField(
+        controller: widget.controller,
+        decoration: inputDecoration,
+        keyboardType: TextInputType.number,
+      );
     } else {
       return TextField(
         controller: widget.controller,

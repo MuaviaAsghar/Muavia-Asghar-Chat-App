@@ -1,20 +1,20 @@
 import 'dart:developer';
 
 import 'package:animated_text_kit/animated_text_kit.dart';
-import 'package:email_otp/email_otp.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
-import 'package:say_anything_to_muavia/Login/login_screen_view.dart';
 
-import '../authentication/auth.dart';
 import '../widgets/text_fields.dart';
+import 'otp_screen_model.dart';
 
 class OtpScreenView extends StatefulWidget {
+  final String name;
   final String email;
   final String password;
 
   const OtpScreenView({
     super.key,
+    required this.name,
     required this.email,
     required this.password,
   });
@@ -25,77 +25,48 @@ class OtpScreenView extends StatefulWidget {
 
 class _OtpScreenViewState extends State<OtpScreenView>
     with WidgetsBindingObserver {
-  final TextEditingController otp = TextEditingController();
-  final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
-      GlobalKey<ScaffoldMessengerState>();
-  final EmailOTP myAuth = EmailOTP();
-  final FocusNode _otpFocus = FocusNode();
-  final _auth = AuthService();
-  bool _isKeyboardVisible = false;
+  late OtpScreenModel model;
 
   @override
   void initState() {
     super.initState();
-    _otpFocus.addListener(_updateKeyboardVisibility);
+    model = OtpScreenModel();
+    model.otpFocus.addListener(_updateKeyboardVisibility);
     WidgetsBinding.instance.addObserver(this);
+    // Send OTP when the screen is initialized
+    model.sendOtp(widget.email);
   }
 
   @override
   void dispose() {
-    _otpFocus.removeListener(_updateKeyboardVisibility);
-    _otpFocus.dispose();
+    model.otpFocus.removeListener(_updateKeyboardVisibility);
+    model.otpFocus.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  void _updateKeyboardVisibility() {
+    setState(() {
+      model.isKeyboardVisible = model.otpFocus.hasFocus;
+    });
   }
 
   @override
   void didChangeMetrics() {
     final bottomInset = WidgetsBinding.instance.window.viewInsets.bottom;
     setState(() {
-      _isKeyboardVisible = bottomInset > 0;
+      model.isKeyboardVisible = bottomInset > 0;
     });
-  }
-
-  void _updateKeyboardVisibility() {
-    setState(() {
-      _isKeyboardVisible = _otpFocus.hasFocus;
-    });
-  }
-
-  void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
-    );
-  }
-
-  Future<void> verifyOtp() async {
-    try {
-      await myAuth.verifyOTP(otp: otp.text);
-      await _auth.createUserWithEmailAndPassword(
-        context,
-        email: widget.email,
-        password: widget.password,
-      );
-      navigateToLoginPage(context);
-      log("User Created Successfully");
-
-      _showError("Invalid OTP");
-    } catch (e) {
-      _showError("Failed to verify OTP: ${e.toString()}");
-      print(e);
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        key: model.scaffoldMessengerKey,
         appBar: AppBar(
           title: const Text(
-            "AMA",
+            "ChatApp",
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           centerTitle: true,
@@ -114,12 +85,20 @@ class _OtpScreenViewState extends State<OtpScreenView>
                       type: 'otp',
                       hint: "One Time Password",
                       label: 'OTP',
-                      controller: otp,
-                      focusNode: _otpFocus,
+                      controller: model.otptext,
+                      focusNode: model.otpFocus,
                     ),
                     const Gap(10),
                     GestureDetector(
-                      onTap: () => verifyOtp(),
+                      onTap: () {
+                        log("Verify button tapped");
+                        model.verifyOtp(
+                          context,
+                          widget.name,
+                          widget.email,
+                          widget.password,
+                        );
+                      },
                       child: Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
@@ -138,7 +117,7 @@ class _OtpScreenViewState extends State<OtpScreenView>
                 ),
               ),
             ),
-            if (!_isKeyboardVisible)
+            if (!model.isKeyboardVisible)
               Positioned(
                 top: MediaQuery.of(context).size.height * 0.10,
                 left: 20,
@@ -163,14 +142,4 @@ class _OtpScreenViewState extends State<OtpScreenView>
       ),
     );
   }
-}
-
-Future<void> navigateToLoginPage(BuildContext context) {
-  return Navigator.pushAndRemoveUntil(
-    context,
-    MaterialPageRoute<void>(
-      builder: (BuildContext context) => const LoginScreenView(),
-    ),
-    (Route<dynamic> route) => false,
-  );
 }
