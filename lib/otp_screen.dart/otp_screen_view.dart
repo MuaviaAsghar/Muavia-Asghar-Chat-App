@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:animated_text_kit/animated_text_kit.dart';
+import 'package:email_otp/email_otp.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 
@@ -33,6 +34,14 @@ class _OtpScreenViewState extends State<OtpScreenView>
     model = OtpScreenModel();
     model.otpFocus.addListener(_updateKeyboardVisibility);
     WidgetsBinding.instance.addObserver(this);
+
+    model.myAuth.setConfig(
+      appEmail: "newgamer445@gmail.com",
+      appName: "Bachi na milli",
+      userEmail: widget.email,
+      otpLength: 6,
+      otpType: OTPType.digitsOnly,
+    );
     // Send OTP when the screen is initialized
     model.sendOtp(widget.email);
   }

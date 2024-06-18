@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 
 class CustomTextField extends StatefulWidget {
-  const CustomTextField(
-      {super.key,
-      required this.type,
-      required this.hint,
-      required this.label,
-      this.controller,
-      this.isPassword = false,
-      required FocusNode focusNode});
+  const CustomTextField({
+    super.key,
+    required this.type,
+    required this.hint,
+    required this.label,
+    this.controller,
+    this.isPassword = false,
+    required FocusNode focusNode,
+  });
 
   final String hint;
   final String label;

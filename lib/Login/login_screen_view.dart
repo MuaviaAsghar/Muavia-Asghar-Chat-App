@@ -1,6 +1,7 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:say_anything_to_muavia/ForgetPass/forget_pass_view.dart';
 import 'package:say_anything_to_muavia/Home/home_screen_view.dart';
 import 'package:say_anything_to_muavia/Signup/signup_screen_view.dart';
 
@@ -72,6 +73,16 @@ class _LoginScreenViewState extends State<LoginScreenView>
     );
   }
 
+  void navigateToForgotPage() {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) => const ForgetPassView(),
+      ),
+      (Route<dynamic> route) => false,
+    );
+  }
+
   Future<void> navigateToSignupPage() {
     return Navigator.push(
       context,
@@ -119,17 +130,36 @@ class _LoginScreenViewState extends State<LoginScreenView>
                     ),
                     const Gap(10),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Checkbox(
-                          value: model.rememberMe,
-                          onChanged: (value) {
-                            setState(() {
-                              model.rememberMe = value!;
-                            });
-                          },
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Checkbox(
+                              value: model.rememberMe,
+                              onChanged: (value) {
+                                setState(() {
+                                  model.rememberMe = value!;
+                                });
+                              },
+                            ),
+                            const Text("Remember Me"),
+                          ],
                         ),
-                        const Text("Remember Me"),
+                        InkWell(
+                          child: TextButton(
+                            onPressed: () {
+                              navigateToForgotPage();
+                            },
+                            child: const Text(
+                              ' Forget Password',
+                              style: TextStyle(
+                                decoration: TextDecoration.underline,
+                                color: Colors.blue,
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                     const Gap(10),

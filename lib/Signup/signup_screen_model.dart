@@ -1,7 +1,6 @@
 import 'dart:developer';
 
 import 'package:email_otp/email_otp.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../authentication/auth.dart';
@@ -19,6 +18,7 @@ class SignupScreenModel {
   final FocusNode nameFocus = FocusNode();
   final AuthService _auth = AuthService();
   bool isKeyboardVisible = false;
+  bool isSignupButtonDisabled = false; // Add this variable
 
   Future<void> navigateToOtpPage(
       BuildContext context, String name, String email, String password) {
@@ -36,6 +36,10 @@ class SignupScreenModel {
   }
 
   Future<void> signup(BuildContext context) async {
+    if (isSignupButtonDisabled) return; // Prevent multiple taps
+
+    isSignupButtonDisabled = true; // Disable button on tap
+
     try {
       String emailText = email.text.trim();
       String passwordText = password.text.trim();
@@ -43,18 +47,21 @@ class SignupScreenModel {
 
       if (!_validateEmail(emailText)) {
         _showError(context, "Invalid email address.");
+        isSignupButtonDisabled = false; // Re-enable button
         return;
       }
 
       if (!_validatePassword(passwordText)) {
         _showError(context, "Password must be at least 6 characters.");
+        isSignupButtonDisabled = false; // Re-enable button
         return;
       }
 
-      // Check if the email already exists in Firebase
-      User? user = await _auth.fetchSignInMethodsForEmail(emailText);
-      if (user != null) {
+      // Check if the email already exists in Firestore
+      bool emailExists = await _auth.isEmailInUse(emailText);
+      if (emailExists) {
         _showError(context, "Email already in use.");
+        isSignupButtonDisabled = false; // Re-enable button
         return;
       }
 
@@ -64,7 +71,7 @@ class SignupScreenModel {
 
       myAuth.setConfig(
         appEmail: "newgamer445@gmail.com",
-        appName: "Free Chat",
+        appName: "Bachi na mili",
         userEmail: emailText,
         otpLength: 6,
         otpType: OTPType.digitsOnly,
@@ -76,10 +83,12 @@ class SignupScreenModel {
       } else {
         _showError(context, "Failed to send OTP.");
         log("Failed to send OTP to $emailText");
+        isSignupButtonDisabled = false; // Re-enable button
       }
     } catch (e) {
       _showError(context, "Failed to create user: ${e.toString()}");
       log("Error during signup: $e");
+      isSignupButtonDisabled = false; // Re-enable button
     }
   }
 

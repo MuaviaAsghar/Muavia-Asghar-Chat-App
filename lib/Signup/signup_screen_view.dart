@@ -101,11 +101,19 @@ class _SignupScreenViewState extends State<SignupScreenView>
                     ),
                     const Gap(10),
                     GestureDetector(
-                      onTap: () => model.signup(context),
+                      onTap: model.isSignupButtonDisabled
+                          ? null
+                          : () {
+                              model.signup(context);
+                              setState(() {}); // Trigger rebuild to update UI
+                            },
                       child: Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(color: Colors.grey, width: 1),
+                          color: model.isSignupButtonDisabled
+                              ? Colors.grey
+                              : Colors.black,
                         ),
                         child: const Center(
                           child: Padding(

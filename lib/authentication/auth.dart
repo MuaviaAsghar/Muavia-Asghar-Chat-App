@@ -17,74 +17,92 @@ class AuthService {
 
   Future<User?> createUserWithEmailAndPassword(
     BuildContext context, {
-      required String name,
+    required String name,
     required String email,
     required String password,
   }) async {
     try {
       final cred = await _auth.createUserWithEmailAndPassword(
-           email: email, password: password);
+          email: email, password: password);
 
       // Add user information to Firestore
       await _firestore.collection('users').doc(cred.user?.uid).set({
         'name': name,
         'email': email,
-        'password': password,
         'createdAt': Timestamp.now(),
       });
+
       await _firestore.collection('usersEmailList').doc('userList').set({
-        'email': email,
+        'email': FieldValue.arrayUnion([email]),
       });
+
       return cred.user;
     } catch (e) {
       log("Something went wrong: $e");
-      const snackBar = SnackBar(
-        content: Text("Something went wrong"),
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Something went wrong"),
+        ),
       );
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
     return null;
   }
 
   Future<User?> loginUserWithEmailAndPassword(
-      context, String email, String password) async {
+      BuildContext context, String email, String password) async {
     try {
       final cred = await _auth.signInWithEmailAndPassword(
           email: email, password: password);
       return cred.user;
     } catch (e) {
       log("Something went wrong: $e");
-      const snackBar = SnackBar(
-        content: Text("Something went wrong"),
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Something went wrong"),
+        ),
       );
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
     return null;
   }
 
-  Future<void> signout(context) async {
+  Future<void> signout(BuildContext context) async {
     try {
       await _auth.signOut();
     } catch (e) {
       log("Something went wrong: $e");
-      const snackBar = SnackBar(
-        content: Text("Something went wrong"),
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Something went wrong"),
+        ),
       );
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
   }
 
-  Future<User?> fetchSignInMethodsForEmail(String email) async {
+  Future<void> resetPassword(String email, String newPassword) async {
     try {
-      List<String> signInMethods =
-          await _auth.fetchSignInMethodsForEmail(email);
-      if (signInMethods.isNotEmpty) {
-        return _auth.currentUser;
+      User? user =
+          (await _auth.signInWithEmailLink(email: email, emailLink: email))
+              .user;
+      if (user != null) {
+        await user.updatePassword(newPassword);
+        log("Password reset successfully for $email");
       }
-      return null;
     } catch (e) {
-      log("Error fetching sign-in methods for email: $e");
-      return null;
+      log("Error resetting password: $e");
     }
+  }
+
+  Future<bool> isEmailInUse(String email) async {
+    try {
+      DocumentSnapshot doc =
+          await _firestore.collection('usersEmailList').doc('userList').get();
+      if (doc.exists) {
+        List<dynamic> emails = doc.get('email');
+        return emails.contains(email);
+      }
+    } catch (e) {
+      log("Error checking email existence: $e");
+    }
+    return false;
   }
 }

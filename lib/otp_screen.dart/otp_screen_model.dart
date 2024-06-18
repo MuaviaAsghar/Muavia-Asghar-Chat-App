@@ -14,7 +14,7 @@ class OtpScreenModel {
   final FocusNode otpFocus = FocusNode();
   final AuthService _auth = AuthService();
   bool isKeyboardVisible = false;
-
+  late String email;
   Future<void> navigateToLoginPage(BuildContext context) {
     return Navigator.pushAndRemoveUntil(
       context,
@@ -36,13 +36,6 @@ class OtpScreenModel {
 
   Future<void> sendOtp(String email) async {
     try {
-      myAuth.setConfig(
-        appEmail: "newgamer445@gmail.com",
-        appName: "Free Chat",
-        userEmail: email,
-        otpLength: 6,
-        otpType: OTPType.digitsOnly,
-      );
       bool isOtpSent = await myAuth.sendOTP();
       if (isOtpSent) {
         log("OTP sent to $email");
