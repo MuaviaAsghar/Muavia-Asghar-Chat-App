@@ -1,6 +1,8 @@
 import 'dart:developer';
+
 import 'package:email_otp/email_otp.dart';
 import 'package:flutter/material.dart';
+
 import '../authentication/auth.dart';
 
 class ForgetPassModel {
@@ -21,10 +23,13 @@ class ForgetPassModel {
   bool isEmailSent = false;
   bool emailSendError = false;
 
-  Future<void> forgetPass(BuildContext context) async {
+  Future<void> forgetPass(context) async {
+    if (!_validateEmail(email.text.trim())) {
+      _showError("Invalid email address.");
+      return;
+    }
+
     try {
-      
-      // Assuming forgetPass method sends the email
       myAuth.setConfig(
         appEmail: "newgamer445@gmail.com",
         appName: "ChatApp",
@@ -32,57 +37,61 @@ class ForgetPassModel {
         otpLength: 6,
         otpType: OTPType.digitsOnly,
       );
-_validateEmail(email.text.trim());
+
       bool emailSent = await myAuth.sendOTP();
       if (emailSent) {
         isEmailSent = true;
         emailSendError = false;
+        _showSuccess("OTP sent successfully.");
       } else {
         isEmailSent = false;
         emailSendError = true;
+        _showError("Failed to send OTP.");
       }
     } catch (e) {
       isEmailSent = false;
       emailSendError = true;
+      _showError("Error occurred while sending OTP.");
+      log("Error during forgetPass: $e");
     }
-    (context as Element).markNeedsBuild();
   }
 
-  Future<void> resetPassword(BuildContext context) async {
+  Future<void> resetPassword(context) async {
+    String otpCode = code.text.trim();
+    String newPassword = password.text.trim();
+    String confirmNewPassword = confirmPassword.text.trim();
+
+    if (newPassword != confirmNewPassword) {
+      _showError("Passwords do not match.");
+      return;
+    }
+
+    if (newPassword.isEmpty || otpCode.isEmpty) {
+      _showError("OTP and new password fields cannot be empty.");
+      return;
+    }
+
     try {
-      String otpCode = code.text.trim();
-      String newPassword = password.text.trim();
-      String confirmNewPassword = confirmPassword.text.trim();
-
-      if (newPassword != confirmNewPassword) {
-        _showError(context, "Passwords do not match.");
-        return;
-      }
-
-      if (newPassword.isEmpty || otpCode.isEmpty) {
-        _showError(context, "OTP and new password fields cannot be empty.");
-        return;
-      }
-
       bool isOtpValid = await myAuth.verifyOTP(otp: otpCode);
       if (!isOtpValid) {
-        _showError(context.mounted as BuildContext, "Invalid OTP.");
+        _showError("Invalid OTP.");
         return;
       }
 
-      bool passwordReset = await _auth.resetPassword(email.text.trim(), newPassword, context);
+      bool passwordReset =
+          await _auth.resetPassword(email.text.trim(), newPassword);
       if (passwordReset) {
-        _showSuccess(context.mounted as BuildContext, "Password reset successful.");
+        _showSuccess("Password reset successful.");
       } else {
-        _showError(context.mounted as BuildContext, "Password reset failed.");
+        _showError("Password reset failed.");
       }
     } catch (e) {
-      _showError(context.mounted as BuildContext, "Failed to reset password: ${e.toString()}");
+      _showError("Failed to reset password: ${e.toString()}");
       log("Error during Reset Password: $e");
     }
   }
 
-  void _showError(BuildContext context, String message) {
+  void _showError(String message) {
     scaffoldMessengerKey.currentState?.showSnackBar(
       SnackBar(
         content: Text(message),
@@ -91,7 +100,7 @@ _validateEmail(email.text.trim());
     );
   }
 
-  void _showSuccess(BuildContext context, String message) {
+  void _showSuccess(String message) {
     scaffoldMessengerKey.currentState?.showSnackBar(
       SnackBar(
         content: Text(message),

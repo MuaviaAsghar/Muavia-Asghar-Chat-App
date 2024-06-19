@@ -10,9 +10,9 @@ class HomeScreenModel {
       BuildContext context, VoidCallback navigateToLogin) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
-
-    await _auth.signout(context);
-
+    if (context.mounted) {
+      await _auth.signout(context);
+    }
     navigateToLogin();
   }
 }

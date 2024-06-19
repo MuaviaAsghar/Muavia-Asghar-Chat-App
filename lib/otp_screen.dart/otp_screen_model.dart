@@ -16,6 +16,7 @@ class OtpScreenModel {
   final AuthService _auth = AuthService();
   bool isKeyboardVisible = false;
   late String email;
+
   Future<void> navigateToLoginPage(BuildContext context) {
     return Navigator.pushAndRemoveUntil(
       context,
@@ -26,20 +27,23 @@ class OtpScreenModel {
     );
   }
 
-
-  Future<void> sendOtp(BuildContext context,String email) async {
+  Future<void> sendOtp(BuildContext context, String email) async {
     try {
       bool isOtpSent = await myAuth.sendOTP();
       if (isOtpSent) {
         log("OTP sent to $email");
       } else {
-        CustomSnackBar.showError(context.mounted as BuildContext,"Failed to send OTP",scaffoldMessengerKey);
-      
+        if (context.mounted) {
+          CustomSnackBar.showError(
+              context, "Failed to send OTP", scaffoldMessengerKey);
+        }
         log("Failed to send OTP to $email");
       }
     } catch (e) {
-       CustomSnackBar.showError(context.mounted as BuildContext,"Error: ${e.toString()}",scaffoldMessengerKey);
-    
+      if (context.mounted) {
+        CustomSnackBar.showError(
+            context, "Error: ${e.toString()}", scaffoldMessengerKey);
+      }
       log("Error sending OTP: ${e.toString()}");
     }
   }
@@ -51,22 +55,30 @@ class OtpScreenModel {
       bool isOtpValid = await myAuth.verifyOTP(otp: otptext.text);
       if (isOtpValid) {
         log("OTP is valid, creating user.");
-        await _auth.createUserWithEmailAndPassword(
-          context.mounted as BuildContext,
-          name: name,
-          email: email,
-          password: password,
-        );
-        navigateToLoginPage(context.mounted as BuildContext);
+        if (context.mounted) {
+          await _auth.createUserWithEmailAndPassword(
+            name: name,
+            email: email,
+            password: password,
+            context: context,
+          );
+        }
+        if (context.mounted) {
+          navigateToLoginPage(context);
+        }
         log("User Created Successfully");
       } else {
-        CustomSnackBar.showError(context.mounted as BuildContext,"Invalid OTP",scaffoldMessengerKey);
-      
+        if (context.mounted) {
+          CustomSnackBar.showError(
+              context, "Invalid OTP", scaffoldMessengerKey);
+        }
         log("Invalid OTP");
       }
     } catch (e) {
-      CustomSnackBar.showError(context.mounted as BuildContext,"Failed to verify OTP: ${e.toString()}",scaffoldMessengerKey);
-
+      if (context.mounted) {
+        CustomSnackBar.showError(context,
+            "Failed to verify OTP: ${e.toString()}", scaffoldMessengerKey);
+      }
       log("Error verifying OTP: ${e.toString()}");
     }
   }

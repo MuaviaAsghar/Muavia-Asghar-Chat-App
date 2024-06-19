@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:say_anything_to_muavia/widgets/snackbar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../authentication/auth.dart';
@@ -8,7 +9,10 @@ import '../authentication/auth.dart';
 class LoginScreenModel {
   final TextEditingController email = TextEditingController();
   final TextEditingController password = TextEditingController();
+  final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
+      GlobalKey<ScaffoldMessengerState>();
   final FocusNode emailFocus = FocusNode();
+
   final FocusNode passwordFocus = FocusNode();
   bool isKeyboardVisible = false;
   bool rememberMe = false;
@@ -42,22 +46,28 @@ class LoginScreenModel {
 
   Future<void> login(
       BuildContext context, VoidCallback navigateToHomePage) async {
-    final user = await _auth.loginUserWithEmailAndPassword(
-      context,
-      email.text,
-      password.text,
-    );
+    try {
+      final user = await _auth.loginUserWithEmailAndPassword(
+        email.text,
+        password.text,
+        context,
+      );
 
-    if (user != null) {
-      log("User Logged In");
-      if (rememberMe) {
-        await saveCredentials();
-      } else {
-        await clearCredentials();
+      if (user != null) {
+        log("User Logged In");
+        if (rememberMe) {
+          await saveCredentials();
+        } else {
+          await clearCredentials();
+        }
+        navigateToHomePage();
       }
-      navigateToHomePage();
-    } else {
-      // Handle login error
+    } catch (e) {
+      if (context.mounted) {
+        CustomSnackBar.showError(
+            context, "Error Loging in: ${e.toString()}", scaffoldMessengerKey);
+      }
+      log("Error Loging in: ${e.toString()}");
     }
   }
 }

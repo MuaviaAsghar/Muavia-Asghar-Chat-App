@@ -43,7 +43,7 @@ class _OtpScreenViewState extends State<OtpScreenView>
       otpType: OTPType.digitsOnly,
     );
     // Send OTP when the screen is initialized
-    model.sendOtp(context,widget.email);
+    model.sendOtp(context, widget.email);
   }
 
   @override
@@ -128,7 +128,7 @@ class _OtpScreenViewState extends State<OtpScreenView>
             ),
             if (!model.isKeyboardVisible)
               Positioned(
-                 top: MediaQuery.of(context).size.height * 7/100,
+                top: MediaQuery.of(context).size.height * 7 / 100,
                 left: 20,
                 right: 20,
                 child: AnimatedTextKit(

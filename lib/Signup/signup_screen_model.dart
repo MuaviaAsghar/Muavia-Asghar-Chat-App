@@ -2,10 +2,10 @@ import 'dart:developer';
 
 import 'package:email_otp/email_otp.dart';
 import 'package:flutter/material.dart';
-import 'package:say_anything_to_muavia/widgets/snackbar.dart';
 
 import '../authentication/auth.dart';
 import '../otp_screen.dart/otp_screen_view.dart';
+import '../widgets/snackbar.dart';
 
 class SignupScreenModel {
   final TextEditingController email = TextEditingController();
@@ -19,8 +19,9 @@ class SignupScreenModel {
   final FocusNode nameFocus = FocusNode();
   final AuthService _auth = AuthService();
   bool isKeyboardVisible = false;
-  bool isSignupButtonDisabled = false; // Add this variable
-bool _validateEmail(String email) {
+  bool isSignupButtonDisabled = false;
+
+  bool _validateEmail(String email) {
     return email.contains('@');
   }
 
@@ -44,9 +45,9 @@ bool _validateEmail(String email) {
   }
 
   Future<void> signup(BuildContext context) async {
-    if (isSignupButtonDisabled) return; // Prevent multiple taps
+    if (isSignupButtonDisabled) return;
 
-    isSignupButtonDisabled = true; // Disable button on tap
+    isSignupButtonDisabled = true;
 
     try {
       String emailText = email.text.trim();
@@ -54,36 +55,46 @@ bool _validateEmail(String email) {
       String nameText = name.text.trim();
 
       if (!_validateEmail(emailText)) {
-     CustomSnackBar.showError(context,"Invalid Mail",scaffoldMessengerKey);
-        isSignupButtonDisabled = false; // Re-enable button
+        if (context.mounted) {
+          CustomSnackBar.showError(
+              context, "Invalid Mail", scaffoldMessengerKey);
+        }
+        isSignupButtonDisabled = false;
         return;
       }
 
       if (!_validatePassword(passwordText)) {
-        CustomSnackBar.showError(context, "Password must be at least 6 characters.",scaffoldMessengerKey);
-        isSignupButtonDisabled = false; // Re-enable button
+        if (context.mounted) {
+          CustomSnackBar.showError(context,
+              "Password must be at least 6 characters.", scaffoldMessengerKey);
+        }
+        isSignupButtonDisabled = false;
         return;
       }
 
       bool emailExists = await _auth.isEmailInUse(emailText);
       if (emailExists) {
-    CustomSnackBar.showError(context.mounted as BuildContext, "Email already in use.",scaffoldMessengerKey);
-        isSignupButtonDisabled = false; // Re-enable button
+        if (context.mounted) {
+          CustomSnackBar.showError(
+              context, "Email already in use.", scaffoldMessengerKey);
+        }
+        isSignupButtonDisabled = false;
         return;
       }
 
-      navigateToOtpPage(context.mounted as BuildContext, nameText, emailText, passwordText);
+      if (context.mounted) {
+        await navigateToOtpPage(context, nameText, emailText, passwordText);
+      }
+
       log("Sending OTP to $emailText");
-
- 
-        log("OTP sent to $emailText");
- 
+      log("OTP sent to $emailText");
     } catch (e) {
-        CustomSnackBar.showError(context.mounted as BuildContext, "Failed to create user: ${e.toString()}",scaffoldMessengerKey);
+      if (context.mounted) {
+        CustomSnackBar.showError(context,
+            "Failed to create user: ${e.toString()}", scaffoldMessengerKey);
+      }
       log("Error during signup: $e");
-      isSignupButtonDisabled = false; // Re-enable button
+      isSignupButtonDisabled = false;
     }
-  
-
-  
-    }}
+  }
+}
