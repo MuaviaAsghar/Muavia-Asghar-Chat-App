@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:email_otp/email_otp.dart';
 import 'package:flutter/material.dart';
 import 'package:say_anything_to_muavia/Login/login_screen_view.dart';
+import 'package:say_anything_to_muavia/widgets/snackbar.dart';
 
 import '../authentication/auth.dart';
 
@@ -25,26 +26,20 @@ class OtpScreenModel {
     );
   }
 
-  void showError(String message) {
-    scaffoldMessengerKey.currentState?.showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
-    );
-  }
 
-  Future<void> sendOtp(String email) async {
+  Future<void> sendOtp(BuildContext context,String email) async {
     try {
       bool isOtpSent = await myAuth.sendOTP();
       if (isOtpSent) {
         log("OTP sent to $email");
       } else {
-        showError("Failed to send OTP");
+        CustomSnackBar.showError(context.mounted as BuildContext,"Failed to send OTP",scaffoldMessengerKey);
+      
         log("Failed to send OTP to $email");
       }
     } catch (e) {
-      showError("Error: ${e.toString()}");
+       CustomSnackBar.showError(context.mounted as BuildContext,"Error: ${e.toString()}",scaffoldMessengerKey);
+    
       log("Error sending OTP: ${e.toString()}");
     }
   }
@@ -57,19 +52,21 @@ class OtpScreenModel {
       if (isOtpValid) {
         log("OTP is valid, creating user.");
         await _auth.createUserWithEmailAndPassword(
-          context,
+          context.mounted as BuildContext,
           name: name,
           email: email,
           password: password,
         );
-        navigateToLoginPage(context);
+        navigateToLoginPage(context.mounted as BuildContext);
         log("User Created Successfully");
       } else {
-        showError("Invalid OTP");
+        CustomSnackBar.showError(context.mounted as BuildContext,"Invalid OTP",scaffoldMessengerKey);
+      
         log("Invalid OTP");
       }
     } catch (e) {
-      showError("Failed to verify OTP: ${e.toString()}");
+      CustomSnackBar.showError(context.mounted as BuildContext,"Failed to verify OTP: ${e.toString()}",scaffoldMessengerKey);
+
       log("Error verifying OTP: ${e.toString()}");
     }
   }

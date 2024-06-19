@@ -1,5 +1,6 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:gap/gap.dart';
 import 'package:say_anything_to_muavia/ForgetPass/forget_pass_view.dart';
 import 'package:say_anything_to_muavia/Home/home_screen_view.dart';
@@ -47,9 +48,10 @@ class _LoginScreenViewState extends State<LoginScreenView>
     });
   }
 
-  @override
+   @override
   void didChangeMetrics() {
-    final bottomInset = WidgetsBinding.instance.window.viewInsets.bottom;
+    final bottomInset = View.of(context).viewInsets.bottom;
+
     setState(() {
       model.isKeyboardVisible = bottomInset > 0;
     });
@@ -74,12 +76,8 @@ class _LoginScreenViewState extends State<LoginScreenView>
   }
 
   void navigateToForgotPage() {
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute<void>(
-        builder: (BuildContext context) => const ForgetPassView(),
-      ),
-      (Route<dynamic> route) => false,
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const ForgetPassView()),
     );
   }
 
@@ -104,96 +102,121 @@ class _LoginScreenViewState extends State<LoginScreenView>
           centerTitle: true,
           toolbarHeight: 110,
         ),
-        body: Stack(
+        body: Column(
           children: [
-            Align(
-              alignment: Alignment.center,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CustomTextField(
-                      type: 'email',
-                      hint: "Enter Your Email",
-                      label: 'Email',
-                      controller: model.email,
-                      focusNode: model.emailFocus,
-                    ),
-                    const Gap(20),
-                    CustomTextField(
-                      type: 'password',
-                      hint: "Enter Your Password",
-                      label: 'Password',
-                      controller: model.password,
-                      focusNode: model.passwordFocus,
-                    ),
-                    const Gap(10),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Checkbox(
-                              value: model.rememberMe,
-                              onChanged: (value) {
-                                setState(() {
-                                  model.rememberMe = value!;
-                                });
-                              },
-                            ),
-                            const Text("Remember Me"),
-                          ],
-                        ),
-                        InkWell(
-                          child: TextButton(
-                            onPressed: () {
-                              navigateToForgotPage();
-                            },
-                            child: const Text(
-                              ' Forget Password',
-                              style: TextStyle(
-                                decoration: TextDecoration.underline,
-                                color: Colors.blue,
+            Expanded(
+              child: Stack(
+                children: [
+                  Align(
+                    alignment: Alignment.center,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          CustomTextField(
+                            type: 'email',
+                            hint: "Enter Your Email",
+                            label: 'Email',
+                            controller: model.email,
+                            focusNode: model.emailFocus,
+                          ),
+                          const Gap(20),
+                          CustomTextField(
+                            type: 'password',
+                            hint: "Enter Your Password",
+                            label: 'Password',
+                            controller: model.password,
+                            focusNode: model.passwordFocus,
+                          ),
+                          const Gap(10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Checkbox(
+                                    value: model.rememberMe,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        model.rememberMe = value!;
+                                      });
+                                    },
+                                  ),
+                                  const Text("Remember Me"),
+                                ],
+                              ),
+                              InkWell(
+                                child: TextButton(
+                                  onPressed: () {
+                                    navigateToForgotPage();
+                                  },
+                                  child: const Text(
+                                    'Forget Password',
+                                    style: TextStyle(
+                                      decoration: TextDecoration.underline,
+                                      color: Colors.blue,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const Gap(10),
+                          GestureDetector(
+                            onTap: () => model.login(context, navigateToHomePage),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: Colors.grey, width: 1),
+                              ),
+                              child: const Center(
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 15, horizontal: 10),
+                                  child: Text("Login"),
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const Gap(10),
-                    GestureDetector(
-                      onTap: () => model.login(context, navigateToHomePage),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: Colors.grey, width: 1),
-                        ),
-                        child: const Center(
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(
-                                vertical: 15, horizontal: 10),
-                            child: Text("Login"),
-                          ),
-                        ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  if (!model.isKeyboardVisible)
+                    Positioned(
+                      top: MediaQuery.of(context).size.height * 7 / 100,
+                      left: 20,
+                      right: 20,
+                      child: AnimatedTextKit(
+                        repeatForever: true,
+                        animatedTexts: [
+                          TyperAnimatedText(
+                            "You're on a Login page!",
+                            speed: const Duration(milliseconds: 100),
+                            curve: Curves.easeInOutBack,
+                            textStyle: const TextStyle(
+                              fontSize: 30,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
               ),
             ),
-            Align(
-              alignment: AlignmentDirectional.bottomCenter,
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 15),
+            if (!model.isKeyboardVisible)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 20.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text("New To This App?"),
                     InkWell(
-                      child: TextButton(
-                        onPressed: () {
+                      child: GestureDetector(
+                        onTap: () {
                           navigateToSignupPage();
                         },
                         child: const Text(
@@ -203,27 +226,6 @@ class _LoginScreenViewState extends State<LoginScreenView>
                             color: Colors.blue,
                           ),
                         ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            if (!model.isKeyboardVisible)
-              Positioned(
-                top: MediaQuery.of(context).size.height * 0.10,
-                left: 20,
-                right: 20,
-                child: AnimatedTextKit(
-                  repeatForever: true,
-                  animatedTexts: [
-                    TyperAnimatedText(
-                      "You're on a login page!",
-                      speed: const Duration(milliseconds: 200),
-                      curve: Curves.easeInOutBack,
-                      textStyle: const TextStyle(
-                        fontSize: 48,
-                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],

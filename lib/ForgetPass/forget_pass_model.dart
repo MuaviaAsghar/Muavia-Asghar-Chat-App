@@ -1,8 +1,6 @@
 import 'dart:developer';
-
 import 'package:email_otp/email_otp.dart';
 import 'package:flutter/material.dart';
-
 import '../authentication/auth.dart';
 
 class ForgetPassModel {
@@ -20,43 +18,34 @@ class ForgetPassModel {
   final AuthService _auth = AuthService();
   bool isKeyboardVisible = false;
   bool isOtpSent = false;
+  bool isEmailSent = false;
+  bool emailSendError = false;
 
   Future<void> forgetPass(BuildContext context) async {
     try {
-      String emailText = email.text.trim();
-
-      if (!_validateEmail(emailText)) {
-        _showError(context, "Invalid email address.");
-        return;
-      }
-
-      // Check if the email already exists in Firestore
-      bool emailExists = await _auth.isEmailInUse(emailText);
-      if (!emailExists) {
-        _showError(context, "Email not found.");
-        return;
-      }
-
+      
+      // Assuming forgetPass method sends the email
       myAuth.setConfig(
         appEmail: "newgamer445@gmail.com",
         appName: "ChatApp",
-        userEmail: emailText,
+        userEmail: email.text.trim(),
         otpLength: 6,
         otpType: OTPType.digitsOnly,
       );
-
-      bool otpSent = await myAuth.sendOTP();
-      if (otpSent) {
-        log("OTP sent to $emailText");
-        isOtpSent = true;
+_validateEmail(email.text.trim());
+      bool emailSent = await myAuth.sendOTP();
+      if (emailSent) {
+        isEmailSent = true;
+        emailSendError = false;
       } else {
-        _showError(context, "Failed to send OTP.");
-        log("Failed to send OTP to $emailText");
+        isEmailSent = false;
+        emailSendError = true;
       }
     } catch (e) {
-      _showError(context, "Failed to send OTP: ${e.toString()}");
-      log("Error during Sending OTP: $e");
+      isEmailSent = false;
+      emailSendError = true;
     }
+    (context as Element).markNeedsBuild();
   }
 
   Future<void> resetPassword(BuildContext context) async {
@@ -76,32 +65,44 @@ class ForgetPassModel {
       }
 
       bool isOtpValid = await myAuth.verifyOTP(otp: otpCode);
-      if (isOtpValid) {
-        log("OTP is valid, resetting password.");
-        await _auth.resetPassword(email.text.trim(), newPassword);
-        log("Password reset successfully.");
-        _showError(context, "Password reset successfully.", Colors.green);
+      if (!isOtpValid) {
+        _showError(context.mounted as BuildContext, "Invalid OTP.");
+        return;
+      }
+
+      bool passwordReset = await _auth.resetPassword(email.text.trim(), newPassword, context);
+      if (passwordReset) {
+        _showSuccess(context.mounted as BuildContext, "Password reset successful.");
       } else {
-        _showError(context, "Invalid OTP.");
-        log("Invalid OTP");
+        _showError(context.mounted as BuildContext, "Password reset failed.");
       }
     } catch (e) {
-      _showError(context, "Failed to reset password: ${e.toString()}");
-      log("Error resetting password: ${e.toString()}");
+      _showError(context.mounted as BuildContext, "Failed to reset password: ${e.toString()}");
+      log("Error during Reset Password: $e");
     }
   }
 
-  bool _validateEmail(String email) {
-    return email.contains('@');
-  }
-
-  void _showError(BuildContext context, String message,
-      [Color color = Colors.red]) {
+  void _showError(BuildContext context, String message) {
     scaffoldMessengerKey.currentState?.showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: color,
+        backgroundColor: Colors.red,
       ),
     );
+  }
+
+  void _showSuccess(BuildContext context, String message) {
+    scaffoldMessengerKey.currentState?.showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.green,
+      ),
+    );
+  }
+
+  bool _validateEmail(String email) {
+    final emailRegex = RegExp(
+        r'^[a-zA-Z0-9.a-zA-Z0-9.!#$%&*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+$');
+    return emailRegex.hasMatch(email);
   }
 }

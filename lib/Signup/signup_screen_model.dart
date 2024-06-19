@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:email_otp/email_otp.dart';
 import 'package:flutter/material.dart';
+import 'package:say_anything_to_muavia/widgets/snackbar.dart';
 
 import '../authentication/auth.dart';
 import '../otp_screen.dart/otp_screen_view.dart';
@@ -19,6 +20,13 @@ class SignupScreenModel {
   final AuthService _auth = AuthService();
   bool isKeyboardVisible = false;
   bool isSignupButtonDisabled = false; // Add this variable
+bool _validateEmail(String email) {
+    return email.contains('@');
+  }
+
+  bool _validatePassword(String password) {
+    return password.length >= 6;
+  }
 
   Future<void> navigateToOtpPage(
       BuildContext context, String name, String email, String password) {
@@ -46,66 +54,36 @@ class SignupScreenModel {
       String nameText = name.text.trim();
 
       if (!_validateEmail(emailText)) {
-        _showError(context, "Invalid email address.");
+     CustomSnackBar.showError(context,"Invalid Mail",scaffoldMessengerKey);
         isSignupButtonDisabled = false; // Re-enable button
         return;
       }
 
       if (!_validatePassword(passwordText)) {
-        _showError(context, "Password must be at least 6 characters.");
+        CustomSnackBar.showError(context, "Password must be at least 6 characters.",scaffoldMessengerKey);
         isSignupButtonDisabled = false; // Re-enable button
         return;
       }
 
-      // Check if the email already exists in Firestore
       bool emailExists = await _auth.isEmailInUse(emailText);
       if (emailExists) {
-        _showError(context, "Email already in use.");
+    CustomSnackBar.showError(context.mounted as BuildContext, "Email already in use.",scaffoldMessengerKey);
         isSignupButtonDisabled = false; // Re-enable button
         return;
       }
 
-      // Navigate to OTP page and send OTP
-      navigateToOtpPage(context, nameText, emailText, passwordText);
+      navigateToOtpPage(context.mounted as BuildContext, nameText, emailText, passwordText);
       log("Sending OTP to $emailText");
 
-      myAuth.setConfig(
-        appEmail: "newgamer445@gmail.com",
-        appName: "Bachi na mili",
-        userEmail: emailText,
-        otpLength: 6,
-        otpType: OTPType.digitsOnly,
-      );
-
-      bool otpSent = await myAuth.sendOTP();
-      if (otpSent) {
+ 
         log("OTP sent to $emailText");
-      } else {
-        _showError(context, "Failed to send OTP.");
-        log("Failed to send OTP to $emailText");
-        isSignupButtonDisabled = false; // Re-enable button
-      }
+ 
     } catch (e) {
-      _showError(context, "Failed to create user: ${e.toString()}");
+        CustomSnackBar.showError(context.mounted as BuildContext, "Failed to create user: ${e.toString()}",scaffoldMessengerKey);
       log("Error during signup: $e");
       isSignupButtonDisabled = false; // Re-enable button
     }
-  }
+  
 
-  bool _validateEmail(String email) {
-    return email.contains('@');
-  }
-
-  bool _validatePassword(String password) {
-    return password.length >= 6;
-  }
-
-  void _showError(BuildContext context, String message) {
-    scaffoldMessengerKey.currentState?.showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
-    );
-  }
-}
+  
+    }}

@@ -76,118 +76,102 @@ class _ForgetPassViewState extends State<ForgetPassView>
               alignment: Alignment.center,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CustomTextField(
-                        type: 'email',
-                        hint: "Enter Your Email",
-                        label: 'email',
-                        focusNode: model.emailFocus),
-                    const Gap(10),
-                    if (model.isOtpSent) ...[
-                      CustomTextField(
-                          type: 'code',
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (!model.isEmailSent)
+                        CustomTextField(
+                          type: 'email',
+                          hint: "Enter Your Email",
+                          label: 'Email',
+                          controller: model.email,
+                          focusNode: model.emailFocus,
+                        ),
+                      const Gap(10),
+                      if (model.emailSendError)
+                        const Text(
+                          'Failed to send email. Please try again.',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      if (model.isOtpSent) ...[
+                        CustomTextField(
+                          type: 'otp',
                           hint: "Enter OTP",
                           label: 'OTP',
                           focusNode: model.codeFocus,
-                          controller: model.code),
-                      const Gap(10),
-                      CustomTextField(
+                          controller: model.code,
+                        ),
+                        const Gap(10),
+                        CustomTextField(
                           type: 'password',
                           hint: "Enter New Password",
                           label: 'New Password',
                           focusNode: model.passwordFocus,
-                          controller: model.password),
-                      const Gap(10),
-                      CustomTextField(
+                          controller: model.password,
+                        ),
+                        const Gap(10),
+                        CustomTextField(
                           type: 'password',
                           hint: "Confirm New Password",
                           label: 'Confirm New Password',
                           focusNode: model.confirmPasswordFocus,
-                          controller: model.confirmPassword),
-                      const Gap(10),
-                      GestureDetector(
-                        onTap: () {
-                          model.resetPassword(context);
-                          setState(() {});
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: Colors.grey, width: 1),
-                            color: Colors.black,
-                          ),
-                          child: const Center(
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(
-                                  vertical: 15, horizontal: 10),
-                              child: Text("Reset Password"),
+                          controller: model.confirmPassword,
+                        ),
+                        const Gap(10),
+                        GestureDetector(
+                          onTap: () {
+                            model.resetPassword(context);
+                            setState(() {});
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: Colors.grey, width: 1),
+                              color: Colors.black,
+                            ),
+                            child: const Center(
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(
+                                    vertical: 15, horizontal: 10),
+                                child: Text(
+                                  "Reset Password",
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ] else
-                      GestureDetector(
-                        onTap: () {
-                          model.forgetPass(context);
-                          setState(() {});
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: Colors.grey, width: 1),
-                            color: Colors.black,
-                          ),
-                          child: const Center(
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(
-                                  vertical: 15, horizontal: 10),
-                              child: Text("Send Mail"),
+                      ],
+                      if (!model.isEmailSent)
+                        GestureDetector(
+                          onTap: () {
+                            model.forgetPass(context);
+                            setState(() {});
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: Colors.grey, width: 1),
+                              color: const Color.fromARGB(255, 255, 255, 255),
+                            ),
+                            child: const Center(
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(
+                                    vertical: 15, horizontal: 10),
+                                child: Text("Send Mail"),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    // if (model.isOtpSent) ...[
-                    //   CustomTextField(
-                    //     label: "otp",
-                    //     type: 'otp',
-                    //     controller: model.code,
-                    //     focusNode: model.codeFocus,
-                    //     hint: 'OTP Code',
-                    //   ),
-                    //   const Gap(30),
-                    //   CustomTextField(
-                    //     hint: "New Password",
-                    //     label: 'new password',
-                    //     type: 'password',
-                    //     controller: model.password,
-                    //     focusNode: model.passwordFocus,
-                    //   ),
-                    //   const Gap(30),
-                    //   CustomTextField(
-                    //     hint: "Confirm New Password",
-                    //     type: 'password',
-                    //     label: 'confirm new password',
-                    //     controller: model.confirmPassword,
-                    //     focusNode: model.confirmPasswordFocus,
-                    //   ),
-                    //   const Gap(30),
-                    // ],
-                    ElevatedButton(
-                      onPressed: model.isOtpSent
-                          ? () => model.resetPassword(context)
-                          : () => model.forgetPass(context),
-                      child:
-                          Text(model.isOtpSent ? 'Reset Password' : 'Send OTP'),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
             if (!model.isKeyboardVisible)
               Positioned(
-                top: MediaQuery.of(context).size.height * 0.10,
+                top: MediaQuery.of(context).size.height * 7 / 100,
                 left: 20,
                 right: 20,
                 child: AnimatedTextKit(
@@ -198,7 +182,7 @@ class _ForgetPassViewState extends State<ForgetPassView>
                       speed: const Duration(milliseconds: 200),
                       curve: Curves.easeInOutBack,
                       textStyle: const TextStyle(
-                        fontSize: 48,
+                        fontSize: 30,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

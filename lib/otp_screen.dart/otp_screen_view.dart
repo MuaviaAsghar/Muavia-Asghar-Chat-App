@@ -37,13 +37,13 @@ class _OtpScreenViewState extends State<OtpScreenView>
 
     model.myAuth.setConfig(
       appEmail: "newgamer445@gmail.com",
-      appName: "Bachi na milli",
+      appName: "Chat app",
       userEmail: widget.email,
       otpLength: 6,
       otpType: OTPType.digitsOnly,
     );
     // Send OTP when the screen is initialized
-    model.sendOtp(widget.email);
+    model.sendOtp(context,widget.email);
   }
 
   @override
@@ -128,7 +128,7 @@ class _OtpScreenViewState extends State<OtpScreenView>
             ),
             if (!model.isKeyboardVisible)
               Positioned(
-                top: MediaQuery.of(context).size.height * 0.10,
+                 top: MediaQuery.of(context).size.height * 7/100,
                 left: 20,
                 right: 20,
                 child: AnimatedTextKit(
@@ -139,7 +139,7 @@ class _OtpScreenViewState extends State<OtpScreenView>
                       speed: const Duration(milliseconds: 200),
                       curve: Curves.easeInOutBack,
                       textStyle: const TextStyle(
-                        fontSize: 48,
+                        fontSize: 30,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

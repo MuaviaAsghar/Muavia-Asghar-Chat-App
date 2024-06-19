@@ -130,7 +130,7 @@ class _SignupScreenViewState extends State<SignupScreenView>
             ),
             if (!model.isKeyboardVisible)
               Positioned(
-                top: MediaQuery.of(context).size.height * 0.10,
+               top: MediaQuery.of(context).size.height * 7/100,
                 left: 20,
                 right: 20,
                 child: AnimatedTextKit(
@@ -141,7 +141,7 @@ class _SignupScreenViewState extends State<SignupScreenView>
                       speed: const Duration(milliseconds: 200),
                       curve: Curves.easeInOutBack,
                       textStyle: const TextStyle(
-                        fontSize: 48,
+                        fontSize: 30,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +14,24 @@ class AuthService {
     }
   }
 
+  Future<void> updateUser(String newPassword, BuildContext context) async {
+    try {
+      CollectionReference users = FirebaseFirestore.instance.collection('users');
+      return users
+          .doc('users')
+          .update({'password': newPassword})
+          .then((value) => print("User Updated"))
+          .catchError((error) => print("Failed to update user: $error"));
+    } catch (e) {
+      log("Error resetting password: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Something went wrong"),
+        ),
+      );
+    }
+  }
+
   Future<User?> createUserWithEmailAndPassword(
     BuildContext context, {
     required String name,
@@ -25,10 +42,10 @@ class AuthService {
       final cred = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
 
-      // Add user information to Firestore
       await _firestore.collection('users').doc(cred.user?.uid).set({
         'name': name,
         'email': email,
+        'password': password,
         'createdAt': Timestamp.now(),
       });
 
@@ -39,7 +56,7 @@ class AuthService {
       return cred.user;
     } catch (e) {
       log("Something went wrong: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(context.mounted as BuildContext).showSnackBar(
         const SnackBar(
           content: Text("Something went wrong"),
         ),
@@ -56,7 +73,7 @@ class AuthService {
       return cred.user;
     } catch (e) {
       log("Something went wrong: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(context.mounted as BuildContext).showSnackBar(
         const SnackBar(
           content: Text("Something went wrong"),
         ),
@@ -70,7 +87,7 @@ class AuthService {
       await _auth.signOut();
     } catch (e) {
       log("Something went wrong: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(context.mounted as BuildContext).showSnackBar(
         const SnackBar(
           content: Text("Something went wrong"),
         ),
@@ -78,18 +95,23 @@ class AuthService {
     }
   }
 
-  Future<void> resetPassword(String email, String newPassword) async {
+  Future<bool> resetPassword(String email, String newPassword, BuildContext context) async {
     try {
-      User? user =
-          (await _auth.signInWithEmailLink(email: email, emailLink: email))
-              .user;
+      User? user = (await _auth.signInWithEmailLink(email: email, emailLink: '')).user;
       if (user != null) {
         await user.updatePassword(newPassword);
-        log("Password reset successfully for $email");
+        await updateUser(newPassword, context.mounted as BuildContext);
+        return true;
       }
     } catch (e) {
       log("Error resetting password: $e");
+      ScaffoldMessenger.of(context.mounted as BuildContext).showSnackBar(
+        const SnackBar(
+          content: Text("Something went wrong"),
+        ),
+      );
     }
+    return false;
   }
 
   Future<bool> isEmailInUse(String email) async {
