@@ -1,5 +1,7 @@
 import 'dart:developer';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:say_anything_to_muavia/widgets/snackbar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -17,7 +19,8 @@ class LoginScreenModel {
   bool isKeyboardVisible = false;
   bool rememberMe = false;
   final AuthService _auth = AuthService();
-
+  final _firestore = FirebaseFirestore.instance;
+  final _firebaseauth = FirebaseAuth.instance;
   Future<void> loadSavedCredentials(
       Function(String, String, bool) updateState) async {
     final prefs = await SharedPreferences.getInstance();
@@ -54,20 +57,48 @@ class LoginScreenModel {
       );
 
       if (user != null) {
-        log("User Logged In");
-        if (rememberMe) {
-          await saveCredentials();
+        dynamic userId = _firebaseauth.currentUser?.uid;
+
+        DocumentSnapshot userDoc =
+            await _firestore.collection('users').doc(userId).get();
+
+        if (userDoc.exists) {
+          String storedPassword = userDoc.get('password');
+
+          if (password.text == storedPassword) {
+            log("Password matches, proceeding with login.");
+
+            if (rememberMe) {
+              await saveCredentials();
+            } else {
+              await clearCredentials();
+            }
+            navigateToHomePage();
+          } else {
+            log("Password does not match, updating the password in Firestore.");
+            await _firestore.collection('users').doc(userId).update({
+              'password': password.text,
+            });
+
+            if (rememberMe) {
+              await saveCredentials();
+            } else {
+              await clearCredentials();
+            }
+            navigateToHomePage();
+          }
         } else {
-          await clearCredentials();
+          log("User document does not exist.");
+          CustomSnackBar.showError(
+              context, "User document does not exist", scaffoldMessengerKey);
         }
-        navigateToHomePage();
       }
     } catch (e) {
       if (context.mounted) {
         CustomSnackBar.showError(
-            context, "Error Loging in: ${e.toString()}", scaffoldMessengerKey);
+            context, "Error logging in: ${e.toString()}", scaffoldMessengerKey);
       }
-      log("Error Loging in: ${e.toString()}");
+      log("Error logging in: ${e.toString()}");
     }
   }
 }
