@@ -113,7 +113,7 @@ class _SignupScreenViewState extends State<SignupScreenView>
                           border: Border.all(color: Colors.grey, width: 1),
                           color: model.isSignupButtonDisabled
                               ? Colors.grey
-                              : Colors.black,
+                              : const Color.fromARGB(255, 255, 255, 255),
                         ),
                         child: const Center(
                           child: Padding(
