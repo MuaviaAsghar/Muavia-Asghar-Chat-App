@@ -1,10 +1,9 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
-
 import 'package:say_anything_to_muavia/widgets/text_fields.dart';
-
 import 'change_password_outside_app_model.dart';
+
 class ChangePasswordOutsideAppView extends StatefulWidget {
   const ChangePasswordOutsideAppView({super.key});
 

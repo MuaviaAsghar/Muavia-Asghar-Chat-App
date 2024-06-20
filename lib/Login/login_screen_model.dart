@@ -89,9 +89,10 @@ class LoginScreenModel {
           }
         } else {
           log("User document does not exist.");
+          if(context.mounted){
           CustomSnackBar.showError(
               context, "User document does not exist", scaffoldMessengerKey);
-        }
+        }}
       }
     } catch (e) {
       if (context.mounted) {

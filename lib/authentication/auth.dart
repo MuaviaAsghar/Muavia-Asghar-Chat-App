@@ -48,10 +48,11 @@ class AuthService {
         'createdAt': Timestamp.now(),
       });
 
-      await _firestore.collection('usersEmailList').doc('userList').set({
+  await _firestore.collection('usersEmailList').doc('userList').update({
         'email': FieldValue.arrayUnion([email]),
       });
 
+      if (context.mounted);
       return cred.user;
     } catch (e) {
       log("Something went wrong: $e");
