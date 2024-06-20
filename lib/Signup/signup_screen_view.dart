@@ -48,7 +48,7 @@ class _SignupScreenViewState extends State<SignupScreenView>
 
   @override
   void didChangeMetrics() {
-    final bottomInset = WidgetsBinding.instance.window.viewInsets.bottom;
+  final bottomInset = View.of(context).viewInsets.bottom;
     setState(() {
       model.isKeyboardVisible = bottomInset > 0;
     });

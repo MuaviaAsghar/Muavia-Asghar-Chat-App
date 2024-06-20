@@ -1,42 +1,39 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
-import 'package:say_anything_to_muavia/ForgetPass/forget_pass_model.dart';
+
 import 'package:say_anything_to_muavia/widgets/text_fields.dart';
 
-class ForgetPassView extends StatefulWidget {
-  const ForgetPassView({super.key});
+import 'change_password_outside_app_model.dart';
+class ChangePasswordOutsideAppView extends StatefulWidget {
+  const ChangePasswordOutsideAppView({super.key});
 
   @override
-  State<ForgetPassView> createState() => _ForgetPassViewState();
+  State<ChangePasswordOutsideAppView> createState() => _ChangePasswordOutsideAppState();
 }
 
-class _ForgetPassViewState extends State<ForgetPassView>
-    with WidgetsBindingObserver {
-  late ForgetPassModel model;
+class _ChangePasswordOutsideAppState extends State<ChangePasswordOutsideAppView> with WidgetsBindingObserver {
+  late ChangePasswordOutsideAppModel model;
 
   @override
   void initState() {
     super.initState();
-    model = ForgetPassModel();
+    model = ChangePasswordOutsideAppModel();
     model.emailFocus.addListener(_updateKeyboardVisibility);
-    model.codeFocus.addListener(_updateKeyboardVisibility);
     WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void dispose() {
     model.emailFocus.removeListener(_updateKeyboardVisibility);
-    model.codeFocus.removeListener(_updateKeyboardVisibility);
     model.emailFocus.dispose();
-    model.codeFocus.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
   void _updateKeyboardVisibility() {
     setState(() {
-      model.isKeyboardVisible = model.emailFocus.hasFocus || model.codeFocus.hasFocus;
+      model.isKeyboardVisible = model.emailFocus.hasFocus;
     });
   }
 
@@ -79,14 +76,6 @@ class _ForgetPassViewState extends State<ForgetPassView>
                         focusNode: model.emailFocus,
                       ),
                       const Gap(10),
-                      CustomTextField(
-                        type: 'otp',
-                        hint: "Enter the OTP",
-                        label: 'OTP',
-                        controller: model.code,
-                        focusNode: model.codeFocus,
-                      ),
-                      const Gap(10),
                       GestureDetector(
                         onTap: model.isCooldownActive
                             ? null
@@ -110,24 +99,6 @@ class _ForgetPassViewState extends State<ForgetPassView>
                         ),
                       ),
                       const Gap(10),
-                      GestureDetector(
-                        onTap: () async {
-                          await model.verifyOTP(context);
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: Colors.grey, width: 1),
-                            color: const Color.fromARGB(255, 255, 255, 255),
-                          ),
-                          child: const Center(
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(vertical: 15, horizontal: 10),
-                              child: Text("Verify OTP"),
-                            ),
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                 ),

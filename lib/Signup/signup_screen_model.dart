@@ -64,37 +64,35 @@ class SignupScreenModel {
       }
 
       if (!_validatePassword(passwordText)) {
-        if (context.mounted) {
-          CustomSnackBar.showError(context,
-              "Password must be at least 6 characters.", scaffoldMessengerKey);
-        }
-        isSignupButtonDisabled = false;
+        
+        CustomSnackBar.showError(context, "Password must be at least 6 characters.",scaffoldMessengerKey);
+        isSignupButtonDisabled = false; // Re-enable button
         return;
       }
 
       bool emailExists = await _auth.isEmailInUse(emailText);
       if (emailExists) {
-        if (context.mounted) {
-          CustomSnackBar.showError(
-              context, "Email already in use.", scaffoldMessengerKey);
-        }
-        isSignupButtonDisabled = false;
+        if(context.mounted){
+    CustomSnackBar.showError(context , "Email already in use.",scaffoldMessengerKey);
+        isSignupButtonDisabled = false; // Re-enable button
         return;
+        }
       }
-
-      if (context.mounted) {
-        await navigateToOtpPage(context, nameText, emailText, passwordText);
-      }
-
+if(context.mounted){
+      navigateToOtpPage(context, nameText, emailText, passwordText);
       log("Sending OTP to $emailText");
-      log("OTP sent to $emailText");
-    } catch (e) {
-      if (context.mounted) {
-        CustomSnackBar.showError(context,
-            "Failed to create user: ${e.toString()}", scaffoldMessengerKey);
-      }
-      log("Error during signup: $e");
-      isSignupButtonDisabled = false;
-    }
-  }
+
+ 
+        log("OTP sent to $emailText");
 }
+    } catch (e) {
+      if(context.mounted){       
+         CustomSnackBar.showError(context, "Failed to create user: ${e.toString()}",scaffoldMessengerKey);
+      log("Error during signup: $e");
+      isSignupButtonDisabled = false; // Re-enable button
+      }
+    }
+  
+
+  
+    }}

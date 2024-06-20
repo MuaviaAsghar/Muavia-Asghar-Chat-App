@@ -33,18 +33,16 @@ class OtpScreenModel {
       if (isOtpSent) {
         log("OTP sent to $email");
       } else {
-        if (context.mounted) {
-          CustomSnackBar.showError(
-              context, "Failed to send OTP", scaffoldMessengerKey);
-        }
-        log("Failed to send OTP to $email");
+              if(context.mounted){
+        CustomSnackBar.showError(context ,"Failed to send OTP",scaffoldMessengerKey);
+      
+        log("Failed to send OTP to $email");}
       }
     } catch (e) {
-      if (context.mounted) {
-        CustomSnackBar.showError(
-            context, "Error: ${e.toString()}", scaffoldMessengerKey);
-      }
-      log("Error sending OTP: ${e.toString()}");
+      if(context.mounted){
+       CustomSnackBar.showError(context,"Error: ${e.toString()}",scaffoldMessengerKey);
+    
+      log("Error sending OTP: ${e.toString()}");}
     }
   }
 
@@ -55,31 +53,28 @@ class OtpScreenModel {
       bool isOtpValid = await myAuth.verifyOTP(otp: otptext.text);
       if (isOtpValid) {
         log("OTP is valid, creating user.");
-        if (context.mounted) {
-          await _auth.createUserWithEmailAndPassword(
-            name: name,
-            email: email,
-            password: password,
-            context: context,
-          );
-        }
-        if (context.mounted) {
-          navigateToLoginPage(context);
-        }
+        if(context.mounted){
+        await _auth.createUserWithEmailAndPassword(
+          context:context,
+          name: name,
+          email: email,
+          password: password, 
+        );}
+        if(context.mounted){
+        navigateToLoginPage(context );
         log("User Created Successfully");
-      } else {
-        if (context.mounted) {
-          CustomSnackBar.showError(
-              context, "Invalid OTP", scaffoldMessengerKey);
         }
-        log("Invalid OTP");
+      } else {
+        if(context.mounted){
+        CustomSnackBar.showError(context ,"Invalid OTP",scaffoldMessengerKey);
+      
+        log("Invalid OTP");}
       }
     } catch (e) {
-      if (context.mounted) {
-        CustomSnackBar.showError(context,
-            "Failed to verify OTP: ${e.toString()}", scaffoldMessengerKey);
-      }
-      log("Error verifying OTP: ${e.toString()}");
+          if(context.mounted){
+      CustomSnackBar.showError(context ,"Failed to verify OTP: ${e.toString()}",scaffoldMessengerKey);
+
+      log("Error verifying OTP: ${e.toString()}");}
     }
   }
 }

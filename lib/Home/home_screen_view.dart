@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:say_anything_to_muavia/Login/login_screen_view.dart';
+import 'package:say_anything_to_muavia/setting_screen/setting_screen_view.dart';
 
 import 'home_screen_model.dart';
 
@@ -55,24 +56,32 @@ class _HomeScreenViewState extends State<HomeScreenView> {
               leading: const Icon(Icons.person),
               title: const Text('My Profile'),
               onTap: () {
-                Navigator.pop(context);
+             
               },
             ),
             ListTile(
               leading: const Icon(Icons.workspace_premium),
               title: const Text('Go Premium'),
               onTap: () {
-                Navigator.pop(context);
+           
               },
             ),
             ListTile(
               leading: const Icon(Icons.edit),
               title: const Text('Edit Profile'),
               onTap: () {
-                Navigator.pop(context);
+      ;
               },
             ),
             const Spacer(), // This pushes the following ListTile to the bottom
+            Padding(padding: const EdgeInsets.only(bottom: 20),
+            child:ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Settings'),
+              onTap: () {
+                Navigator.of(context).push(MaterialPageRoute(builder: (context)=>const SettingScreenView()));
+              },
+            ) ,),
             Padding(
               padding: const EdgeInsets.only(bottom: 20),
               child: ListTile(

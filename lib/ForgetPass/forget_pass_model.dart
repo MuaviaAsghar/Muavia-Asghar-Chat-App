@@ -1,117 +1,119 @@
+import 'dart:async';
 import 'dart:developer';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:email_otp/email_otp.dart';
 import 'package:flutter/material.dart';
-
-import '../authentication/auth.dart';
+import '../new_password/new_password_view.dart';
+import '../widgets/snackbar.dart';
 
 class ForgetPassModel {
   final TextEditingController email = TextEditingController();
-  final TextEditingController password = TextEditingController();
-  final TextEditingController confirmPassword = TextEditingController();
   final TextEditingController code = TextEditingController();
-  final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
-      GlobalKey<ScaffoldMessengerState>();
+  final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
   final EmailOTP myAuth = EmailOTP();
   final FocusNode emailFocus = FocusNode();
-  final FocusNode passwordFocus = FocusNode();
-  final FocusNode confirmPasswordFocus = FocusNode();
   final FocusNode codeFocus = FocusNode();
-  final AuthService _auth = AuthService();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   bool isKeyboardVisible = false;
   bool isOtpSent = false;
   bool isEmailSent = false;
   bool emailSendError = false;
+  bool isCooldownActive = false; // Cooldown state
+  int cooldownSeconds = 60; // Cooldown period in seconds
 
-  Future<void> forgetPass(context) async {
-    if (!_validateEmail(email.text.trim())) {
-      _showError("Invalid email address.");
+  Future<void> sendMail(BuildContext context) async {
+    if (isCooldownActive) {
+      CustomSnackBar.showError(context, "Please wait before trying again", scaffoldMessengerKey);
       return;
     }
 
     try {
-      myAuth.setConfig(
-        appEmail: "newgamer445@gmail.com",
-        appName: "ChatApp",
-        userEmail: email.text.trim(),
-        otpLength: 6,
-        otpType: OTPType.digitsOnly,
-      );
+      bool emailExists = await checkEmail(email.text.trim());
+      if (emailExists) {
+        myAuth.setConfig(
+          appEmail: "newgamer445@gmail.com",
+          appName: "ChatApp",
+          userEmail: email.text.trim(),
+          otpLength: 6,
+          otpType: OTPType.digitsOnly,
+        );
 
-      bool emailSent = await myAuth.sendOTP();
-      if (emailSent) {
-        isEmailSent = true;
-        emailSendError = false;
-        _showSuccess("OTP sent successfully.");
+        bool emailSent = await myAuth.sendOTP();
+        if (emailSent) {
+          isEmailSent = true;
+          emailSendError = false;
+          log("OTP sent to ${email.text.trim()}");
+          if (context.mounted) {
+            CustomSnackBar.showSuccess(context, "OTP sent to your email", scaffoldMessengerKey);
+          }
+          startCooldown(); // Start cooldown after successful email send
+        } else {
+          isEmailSent = false;
+          emailSendError = true;
+          log("Failed to send OTP to ${email.text.trim()}");
+          if (context.mounted) {
+            CustomSnackBar.showError(context, "Failed to send OTP", scaffoldMessengerKey);
+          }
+        }
       } else {
-        isEmailSent = false;
-        emailSendError = true;
-        _showError("Failed to send OTP.");
+        log("Email does not exist");
+        if (context.mounted) {
+          CustomSnackBar.showError(context, "Email does not exist", scaffoldMessengerKey);
+        }
       }
     } catch (e) {
       isEmailSent = false;
       emailSendError = true;
-      _showError("Error occurred while sending OTP.");
-      log("Error during forgetPass: $e");
+      log("Error sending OTP: ${e.toString()}");
+      if (context.mounted) {
+        CustomSnackBar.showError(context, "Error: ${e.toString()}", scaffoldMessengerKey);
+      }
     }
   }
 
-  Future<void> resetPassword(context) async {
-    String otpCode = code.text.trim();
-    String newPassword = password.text.trim();
-    String confirmNewPassword = confirmPassword.text.trim();
-
-    if (newPassword != confirmNewPassword) {
-      _showError("Passwords do not match.");
-      return;
-    }
-
-    if (newPassword.isEmpty || otpCode.isEmpty) {
-      _showError("OTP and new password fields cannot be empty.");
-      return;
-    }
-
+  Future<void> verifyOTP(BuildContext context) async {
     try {
-      bool isOtpValid = await myAuth.verifyOTP(otp: otpCode);
-      if (!isOtpValid) {
-        _showError("Invalid OTP.");
-        return;
-      }
-
-      bool passwordReset =
-          await _auth.resetPassword(email.text.trim(), newPassword);
-      if (passwordReset) {
-        _showSuccess("Password reset successful.");
+      bool otpValid = await myAuth.verifyOTP(otp: code.text.trim());
+      if (otpValid) {
+        if (context.mounted) {
+          CustomSnackBar.showSuccess(context, "OTP verified successfully", scaffoldMessengerKey);
+        }
+        if (context.mounted) {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => NewPasswordView(email: email.text.trim())),
+          );
+        }
       } else {
-        _showError("Password reset failed.");
+        if (context.mounted) {
+          CustomSnackBar.showError(context, "Invalid OTP", scaffoldMessengerKey);
+        }
       }
     } catch (e) {
-      _showError("Failed to reset password: ${e.toString()}");
-      log("Error during Reset Password: $e");
+      log("Error verifying OTP: $e");
+      if (context.mounted) {
+        CustomSnackBar.showError(context, "Error: $e", scaffoldMessengerKey);
+      }
     }
   }
 
-  void _showError(String message) {
-    scaffoldMessengerKey.currentState?.showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
-    );
+  Future<bool> checkEmail(String email) async {
+    try {
+      DocumentSnapshot doc = await _firestore.collection('usersEmailList').doc('userList').get();
+      if (doc.exists) {
+        List<dynamic> emails = doc.get('email');
+        return emails.contains(email);
+      }
+    } catch (e) {
+      log("Error checking email existence: $e");
+    }
+    return false;
   }
 
-  void _showSuccess(String message) {
-    scaffoldMessengerKey.currentState?.showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green,
-      ),
-    );
-  }
-
-  bool _validateEmail(String email) {
-    final emailRegex = RegExp(
-        r'^[a-zA-Z0-9.a-zA-Z0-9.!#$%&*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+$');
-    return emailRegex.hasMatch(email);
+  void startCooldown() {
+    isCooldownActive = true;
+    Timer(Duration(seconds: cooldownSeconds), () {
+      isCooldownActive = false;
+    });
   }
 }

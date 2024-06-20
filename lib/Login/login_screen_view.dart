@@ -6,6 +6,7 @@ import 'package:say_anything_to_muavia/ForgetPass/forget_pass_view.dart';
 import 'package:say_anything_to_muavia/Home/home_screen_view.dart';
 import 'package:say_anything_to_muavia/Signup/signup_screen_view.dart';
 
+import '../change_password_outside_app/change_password_outside_app_view.dart';
 import '../widgets/text_fields.dart';
 import 'login_screen_model.dart';
 
@@ -75,9 +76,9 @@ class _LoginScreenViewState extends State<LoginScreenView>
     );
   }
 
-  void navigateToForgotPage() {
+  void navigateToChangePassword() {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const ForgetPassView()),
+      MaterialPageRoute(builder: (context) => const ChangePasswordOutsideAppView()),
     );
   }
 
@@ -150,7 +151,7 @@ class _LoginScreenViewState extends State<LoginScreenView>
                               InkWell(
                                 child: TextButton(
                                   onPressed: () {
-                                    navigateToForgotPage();
+                                    navigateToChangePassword();
                                   },
                                   child: const Text(
                                     'Forget Password',
