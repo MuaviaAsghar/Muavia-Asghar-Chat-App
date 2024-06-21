@@ -20,7 +20,8 @@ class HomeScreenModel {
 
   Future<void> fetchUserData() async {
     if (userId != null) {
-      DocumentSnapshot userDoc = await _firestore.collection('users').doc(userId).get();
+      DocumentSnapshot userDoc =
+          await _firestore.collection('users').doc(userId).get();
       if (userDoc.exists) {
         name = userDoc['name'];
         email = userDoc['email'];
@@ -28,7 +29,8 @@ class HomeScreenModel {
     }
   }
 
-  Future<void> logout(BuildContext context, VoidCallback navigateToLogin) async {
+  Future<void> logout(
+      BuildContext context, VoidCallback navigateToLogin) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
     if (context.mounted) {

@@ -1,9 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:gap/gap.dart';
 import 'package:say_anything_to_muavia/Login/login_screen_view.dart';
-import 'package:say_anything_to_muavia/setting_screen/setting_screen_view.dart';
+import 'package:say_anything_to_muavia/widgets/chat_screen.dart';
 
-import '../chat_screen/chat_screen_view.dart';
+import '../setting_screen/setting_screen_view.dart';
 import 'home_screen_model.dart';
 
 class HomeScreenView extends StatefulWidget {
@@ -15,6 +15,7 @@ class HomeScreenView extends StatefulWidget {
 
 class _HomeScreenViewState extends State<HomeScreenView> {
   late HomeScreenModel model;
+  final _firestore = FirebaseFirestore.instance;
 
   @override
   void initState() {
@@ -42,35 +43,42 @@ class _HomeScreenViewState extends State<HomeScreenView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-       
-  actions: [IconButton(onPressed: (){}, icon: Icon(Icons.search))],
+        actions: [IconButton(onPressed: () {}, icon: const Icon(Icons.search))],
         title: const Text("ChatApp"),
         centerTitle: true,
-        
       ),
-      body: ListView(
-        children: [
-          ListTile(
-            onTap: (){Navigator.of(context).push(MaterialPageRoute(builder: (context)=>const ChatScreenView())) ;},
-            leading: CircleAvatar(child: Text(model.name !=null?model.name![0]:''),),
-            title: Text(model.name ?? "Loading..."),
-            subtitle:const Text("LastMessage"),
-            trailing: 
-              
-              
-     
-                  const Column(mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                    Text('Last Sent at: 12:00 PM'),
-                   Gap(5)
-                    ],  
-                  ),
-            
-              ),
-         
-        
-        ]  ),
-                   drawer: Drawer(
+      body: StreamBuilder(
+        stream: _firestore.collection('UsersList').snapshots(),
+        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return const Center(child: Text('Error loading data'));
+          } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(child: Text('No users found'));
+          } else {
+            final data = snapshot.data!.docs;
+            final nameList = data.map((doc) => doc['name'] as String).toList();
+            final lastMessageList =
+                data.map((doc) => doc['lastMessage'] as String).toList();
+
+            return ListView.builder(
+              physics: const BouncingScrollPhysics(),
+              padding: EdgeInsets.only(
+                  top: MediaQuery.of(context).size.height * .01),
+              itemCount: data.length,
+              itemBuilder: (context, index) {
+                return ChatScreenCard(
+                  name: nameList[index],
+                  firstLetter: nameList[index][0],
+                  lastMessage: lastMessageList[index],
+                );
+              },
+            );
+          }
+        },
+      ),
+      drawer: Drawer(
         child: Column(
           children: [
             UserAccountsDrawerHeader(
@@ -129,7 +137,6 @@ class _HomeScreenViewState extends State<HomeScreenView> {
           ],
         ),
       ),
-      
     );
   }
 }

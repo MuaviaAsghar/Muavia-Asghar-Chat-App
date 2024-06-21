@@ -37,14 +37,28 @@ class _CustomTextFieldState extends State<CustomTextField> {
     );
 
     if (widget.type == 'email') {
-      return TextField(
+      return TextFormField(
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Enter your name';
+          } else if (!value.contains('@')) {
+            return "The entered mail does'nt' ";
+          }
+          return null;
+        },
         keyboardType: TextInputType.emailAddress,
         obscureText: widget.isPassword,
         controller: widget.controller,
         decoration: inputDecoration,
       );
     } else if (widget.type == 'password') {
-      return TextField(
+      return TextFormField(
+        validator: (value) {
+          if (value!.length < 5) {
+            return "Your password must contains at least six digit";
+          }
+          return null;
+        },
         obscureText: _obscureText,
         controller: widget.controller,
         decoration: inputDecoration.copyWith(
@@ -62,19 +76,19 @@ class _CustomTextFieldState extends State<CustomTextField> {
         keyboardType: TextInputType.visiblePassword,
       );
     } else if (widget.type == 'username') {
-      return TextField(
+      return TextFormField(
         controller: widget.controller,
         decoration: inputDecoration,
         keyboardType: TextInputType.name,
       );
     } else if (widget.type == 'otp') {
-      return TextField(
+      return TextFormField(
         controller: widget.controller,
         decoration: inputDecoration,
         keyboardType: TextInputType.number,
       );
     } else {
-      return TextField(
+      return TextFormField(
         controller: widget.controller,
         decoration: inputDecoration.copyWith(
           hintText: 'Unknown type',

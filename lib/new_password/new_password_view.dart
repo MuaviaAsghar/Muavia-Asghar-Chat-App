@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
-
 import 'package:say_anything_to_muavia/new_password/new_password_model.dart';
 import 'package:say_anything_to_muavia/widgets/text_fields.dart';
 
 class NewPasswordView extends StatefulWidget {
-    final String email;
-  const NewPasswordView({super.key,required this.email});
+  final String email;
+  const NewPasswordView({super.key, required this.email});
 
   @override
   State<NewPasswordView> createState() => _NewPasswordViewState();
 }
 
-class _NewPasswordViewState extends State<NewPasswordView> with WidgetsBindingObserver {
-
+class _NewPasswordViewState extends State<NewPasswordView>
+    with WidgetsBindingObserver {
   late NewPasswordModel model;
 
   @override
@@ -37,7 +36,8 @@ class _NewPasswordViewState extends State<NewPasswordView> with WidgetsBindingOb
 
   void _updateKeyboardVisibility() {
     setState(() {
-      model.isKeyboardVisible = model.passwordFocus.hasFocus || model.confirmPasswordFocus.hasFocus;
+      model.isKeyboardVisible =
+          model.passwordFocus.hasFocus || model.confirmPasswordFocus.hasFocus;
     });
   }
 
@@ -90,11 +90,12 @@ class _NewPasswordViewState extends State<NewPasswordView> with WidgetsBindingOb
                       const Gap(10),
                       GestureDetector(
                         onTap: () async {
-                         
-                          await model.resetPassword(context, widget.email, model.password.text);
-                          if(context.mounted){
- model.navigateToHomePage(context);
-                                                }                        },
+                          await model.resetPassword(
+                              context, widget.email, model.password.text);
+                          if (context.mounted) {
+                            model.navigateToHomePage(context);
+                          }
+                        },
                         child: Container(
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(10),
@@ -103,7 +104,8 @@ class _NewPasswordViewState extends State<NewPasswordView> with WidgetsBindingOb
                           ),
                           child: const Center(
                             child: Padding(
-                              padding: EdgeInsets.symmetric(vertical: 15, horizontal: 10),
+                              padding: EdgeInsets.symmetric(
+                                  vertical: 15, horizontal: 10),
                               child: Text("Update Password"),
                             ),
                           ),
