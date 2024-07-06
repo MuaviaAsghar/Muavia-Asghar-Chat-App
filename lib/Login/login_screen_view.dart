@@ -1,8 +1,6 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
-
 import 'package:gap/gap.dart';
-
 import 'package:say_anything_to_muavia/Home/home_screen_view.dart';
 import 'package:say_anything_to_muavia/Signup/signup_screen_view.dart';
 
@@ -49,10 +47,9 @@ class _LoginScreenViewState extends State<LoginScreenView>
     });
   }
 
-   @override
+  @override
   void didChangeMetrics() {
     final bottomInset = View.of(context).viewInsets.bottom;
-
     setState(() {
       model.isKeyboardVisible = bottomInset > 0;
     });
@@ -70,24 +67,21 @@ class _LoginScreenViewState extends State<LoginScreenView>
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute<void>(
-        builder: (BuildContext context) => const HomeScreenView(),
-      ),
+          builder: (BuildContext context) => const HomeScreenView()),
       (Route<dynamic> route) => false,
     );
   }
 
   void navigateToChangePassword() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const ChangePasswordOutsideAppView()),
-    );
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => const ChangePasswordOutsideAppView()));
   }
 
   Future<void> navigateToSignupPage() {
     return Navigator.push(
       context,
       MaterialPageRoute<void>(
-        builder: (BuildContext context) => const SignupScreenView(),
-      ),
+          builder: (BuildContext context) => const SignupScreenView()),
     );
   }
 
@@ -166,11 +160,13 @@ class _LoginScreenViewState extends State<LoginScreenView>
                           ),
                           const Gap(10),
                           GestureDetector(
-                            onTap: () => model.login(context, navigateToHomePage),
+                            onTap: () =>
+                                model.login(context, navigateToHomePage),
                             child: Container(
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: Colors.grey, width: 1),
+                                border:
+                                    Border.all(color: Colors.grey, width: 1),
                               ),
                               child: const Center(
                                 child: Padding(

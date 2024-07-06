@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -6,13 +8,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../authentication/auth.dart';
 
 class HomeScreenModel {
-  final AuthService _auth = AuthService();
+  final AuthService auth = AuthService();
   final _firebaseauth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
 
   String? userId;
   String? name;
   String? email;
+  String? about;
+  String? image;
 
   HomeScreenModel() {
     userId = _firebaseauth.currentUser?.uid;
@@ -20,12 +24,23 @@ class HomeScreenModel {
 
   Future<void> fetchUserData() async {
     if (userId != null) {
-      DocumentSnapshot userDoc =
-          await _firestore.collection('users').doc(userId).get();
-      if (userDoc.exists) {
-        name = userDoc['name'];
-        email = userDoc['email'];
+      try {
+        DocumentSnapshot userDoc =
+            await _firestore.collection('usersData').doc(userId).get();
+        if (userDoc.exists) {
+          name = userDoc['name'] ?? 'Unknown';
+          email = userDoc['email'] ?? 'Unknown';
+          image = userDoc['image'] ?? '';
+          about = userDoc['about'] ?? '';
+          log('Fetched user data: name=$name, email=$email, imageUrl=$image,about=$about,');
+        } else {
+          log('User document does not exist');
+        }
+      } catch (e) {
+        log('Error fetching user data: $e');
       }
+    } else {
+      log('User ID is null');
     }
   }
 
@@ -34,7 +49,7 @@ class HomeScreenModel {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
     if (context.mounted) {
-      await _auth.signout(context);
+      await auth.signOut(context);
     }
     navigateToLogin();
   }

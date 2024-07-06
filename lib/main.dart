@@ -1,9 +1,12 @@
+import 'dart:developer';
+
 import 'package:adaptive_theme/adaptive_theme.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_notification_channel/flutter_notification_channel.dart';
+import 'package:flutter_notification_channel/notification_importance.dart';
 import 'package:say_anything_to_muavia/Home/home_screen_view.dart';
 import 'package:say_anything_to_muavia/Login/login_screen_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,39 +16,39 @@ import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setPreferredOrientations(
-          [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown])
-      .then((value) async {
-    Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-    FirebaseFirestore.instance;
+  await SystemChrome.setPreferredOrientations(
+    [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown],
+  );
 
-    final prefs = await SharedPreferences.getInstance();
-    final savedEmail = prefs.getString('email') ?? '';
-    final savedPassword = prefs.getString('password') ?? '';
-    final rememberMe = prefs.getBool('remember_me') ?? false;
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  await _initializeFirebase();
 
-    Widget initialScreen = const LoginScreenView();
+  final prefs = await SharedPreferences.getInstance();
+  final savedEmail = prefs.getString('email') ?? '';
+  final savedPassword = prefs.getString('password') ?? '';
+  final rememberMe = prefs.getBool('remember_me') ?? false;
 
-    if (rememberMe && savedEmail.isNotEmpty && savedPassword.isNotEmpty) {
-      try {
-        UserCredential userCredential =
-            await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: savedEmail,
-          password: savedPassword,
-        );
-        if (userCredential.user != null) {
-          initialScreen = const HomeScreenView();
-        }
-      } catch (e) {
-        // Handle login error here if needed
-        print('Auto-login failed: $e');
+  Widget initialScreen = const LoginScreenView();
+
+  if (rememberMe && savedEmail.isNotEmpty && savedPassword.isNotEmpty) {
+    try {
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: savedEmail,
+        password: savedPassword,
+      );
+      if (userCredential.user != null) {
+        initialScreen = const HomeScreenView();
       }
+    } catch (e) {
+      // Handle login error here if needed
+      log('Auto-login failed: $e');
     }
+  }
 
-    runApp(MyApp(initialScreen: initialScreen));
-  });
+  runApp(MyApp(initialScreen: initialScreen));
 }
 
 class MyApp extends StatelessWidget {
@@ -75,4 +78,16 @@ class MyApp extends StatelessWidget {
       ),
     );
   }
+}
+
+_initializeFirebase() async {
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  var result = await FlutterNotificationChannel().registerNotificationChannel(
+      description: 'For Showing Message Notification',
+      id: 'chats',
+      importance: NotificationImportance.IMPORTANCE_HIGH,
+      name: 'Chats');
+
+  log('\nNotification Channel Result: $result');
 }

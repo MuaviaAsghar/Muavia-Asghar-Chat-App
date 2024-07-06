@@ -16,7 +16,7 @@ class _SettingScreenViewState extends State<SettingScreenView> {
         title: const Text("Setting"),
         centerTitle: true,
       ),
-      body: Column(children: [ListTile(title: Text("Setting"),onTap: () =>  Navigator.of(context).push(MaterialPageRoute(builder: (context) => ForgetPassView())),leading: Icon(Icons.settings),trailing: Icon(Icons.arrow_right),)],)
+      body: Column(children: [ListTile(title: const Text("Setting"),onTap: () =>  Navigator.of(context).push(MaterialPageRoute(builder: (context) => const ForgetPassView())),leading: const Icon(Icons.settings),trailing: const Icon(Icons.arrow_right),)],)
     );
   }
 }

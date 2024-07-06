@@ -14,13 +14,13 @@ class LoginScreenModel {
   final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
       GlobalKey<ScaffoldMessengerState>();
   final FocusNode emailFocus = FocusNode();
-
   final FocusNode passwordFocus = FocusNode();
   bool isKeyboardVisible = false;
   bool rememberMe = false;
   final AuthService _auth = AuthService();
   final _firestore = FirebaseFirestore.instance;
   final _firebaseauth = FirebaseAuth.instance;
+
   Future<void> loadSavedCredentials(
       Function(String, String, bool) updateState) async {
     final prefs = await SharedPreferences.getInstance();
@@ -58,9 +58,16 @@ class LoginScreenModel {
 
       if (user != null) {
         dynamic userId = _firebaseauth.currentUser?.uid;
+        DocumentSnapshot doc = await _firestore
+            .collection('usersData')
+            .doc(_firebaseauth.currentUser?.uid)
+            .get();
+        final displayName = doc.get(
+          'name',
+        ) as String?;
 
         DocumentSnapshot userDoc =
-            await _firestore.collection('users').doc(userId).get();
+            await _firestore.collection('usersData').doc(userId).get();
 
         if (userDoc.exists) {
           String storedPassword = userDoc.get('password');
@@ -73,10 +80,16 @@ class LoginScreenModel {
             } else {
               await clearCredentials();
             }
-            navigateToHomePage();
+            if (await _auth.userExists()) {
+              navigateToHomePage();
+            } else {
+              await _auth.createUser(displayName ?? '').then((value) {
+                navigateToHomePage();
+              });
+            }
           } else {
             log("Password does not match, updating the password in Firestore.");
-            await _firestore.collection('users').doc(userId).update({
+            await _firestore.collection('usersData').doc(userId).update({
               'password': password.text,
             });
 
@@ -85,7 +98,13 @@ class LoginScreenModel {
             } else {
               await clearCredentials();
             }
-            navigateToHomePage();
+            if (await _auth.userExists()) {
+              navigateToHomePage();
+            } else {
+              await _auth.createUser(displayName ?? '').then((value) {
+                navigateToHomePage();
+              });
+            }
           }
         } else {
           log("User document does not exist.");

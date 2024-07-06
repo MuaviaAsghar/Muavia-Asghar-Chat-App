@@ -2,16 +2,19 @@ import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:say_anything_to_muavia/widgets/text_fields.dart';
+
 import 'change_password_outside_app_model.dart';
 
 class ChangePasswordOutsideAppView extends StatefulWidget {
   const ChangePasswordOutsideAppView({super.key});
 
   @override
-  State<ChangePasswordOutsideAppView> createState() => _ChangePasswordOutsideAppState();
+  State<ChangePasswordOutsideAppView> createState() =>
+      _ChangePasswordOutsideAppState();
 }
 
-class _ChangePasswordOutsideAppState extends State<ChangePasswordOutsideAppView> with WidgetsBindingObserver {
+class _ChangePasswordOutsideAppState extends State<ChangePasswordOutsideAppView>
+    with WidgetsBindingObserver {
   late ChangePasswordOutsideAppModel model;
 
   @override
@@ -86,12 +89,13 @@ class _ChangePasswordOutsideAppState extends State<ChangePasswordOutsideAppView>
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(color: Colors.grey, width: 1),
                             color: model.isCooldownActive
-                                ? Colors.grey
+                                ? const Color.fromARGB(255, 177, 14, 14)
                                 : const Color.fromARGB(255, 255, 255, 255),
                           ),
                           child: const Center(
                             child: Padding(
-                              padding: EdgeInsets.symmetric(vertical: 15, horizontal: 10),
+                              padding: EdgeInsets.symmetric(
+                                  vertical: 15, horizontal: 10),
                               child: Text("Send Mail"),
                             ),
                           ),
