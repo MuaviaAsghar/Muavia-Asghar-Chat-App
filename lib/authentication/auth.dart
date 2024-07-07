@@ -31,15 +31,20 @@ class AuthService {
     });
   }
 
-  Future<void> getFirebaseMessagingToken() async {
-    await fMessaging.requestPermission();
-    await fMessaging.getToken().then((t) {
-      if (t != null) {
-        me?.pushToken = t;
-        log('Push Token: $t');
-      }
-    });
-  }
+Future<void> getFirebaseMessagingToken() async {
+  await fMessaging.requestPermission();
+  await fMessaging.getToken().then((t) async {
+    if (t != null) {
+      me?.pushToken = t;
+      await _firestore
+          .collection('usersData')
+          .doc(user!.uid)
+          .update({"pushToken": t}); // Corrected this line
+      log('Push Token: $t');
+    }
+  });
+}
+
 
   Future<void> initializeMe() async {
     User? currentUser = _auth.currentUser;
