@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
@@ -7,12 +6,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
 import 'package:say_anything_to_muavia/widgets/snackbar.dart';
-
 import '../Models/json_model.dart';
 import '../Models/message_model.dart';
-import 'notification_access_token.dart';
 
 class AuthService {
   final _auth = FirebaseAuth.instance;
@@ -21,14 +17,14 @@ class AuthService {
   FirebaseMessaging fMessaging = FirebaseMessaging.instance;
   User? get user => _auth.currentUser;
 
-  late ChatUser? me;
+  ChatUser? me;
   String? displayName;
 
   AuthService() {
     initializeMe();
   }
 
-  Future<void> updateUserInfo(name, about) async {
+  Future<void> updateUserInfo(String name, String about) async {
     await _firestore.collection('usersData').doc(user!.uid).update({
       'name': name,
       'about': about,
@@ -37,7 +33,6 @@ class AuthService {
 
   Future<void> getFirebaseMessagingToken() async {
     await fMessaging.requestPermission();
-
     await fMessaging.getToken().then((t) {
       if (t != null) {
         me?.pushToken = t;
@@ -51,25 +46,21 @@ class AuthService {
     if (currentUser != null) {
       DocumentSnapshot doc =
           await _firestore.collection('usersData').doc(currentUser.uid).get();
-      final displayName = doc.get(
-        'name',
-      ) as String?;
-      final about = doc.get(
-        'about',
-      ) as String?;
-      final photoUrl = doc.get(
-        'image',
-      ) as String?;
+      final displayName = doc.get('name') as String?;
+      final about = doc.get('about') as String?;
+      final photoUrl = doc.get('image') as String?;
+
       me = ChatUser(
-          id: currentUser.uid,
-          name: displayName ?? 'No name found',
-          email: currentUser.email ?? '',
-          about: about ?? "Hey, I'm using We Chat!",
-          image: photoUrl ?? '',
-          createdAt: '',
-          isOnline: false,
-          lastActive: '',
-          pushToken: '');
+        id: currentUser.uid,
+        name: displayName ?? 'No name found',
+        email: currentUser.email ?? '',
+        about: about ?? "Hey, I'm using We Chat!",
+        image: photoUrl ?? '',
+        createdAt: '',
+        isOnline: false,
+        lastActive: '',
+        pushToken: '',
+      );
     } else {
       log('No user is currently signed in.');
     }
@@ -87,20 +78,21 @@ class AuthService {
     return false;
   }
 
-  Future<void> createUser(String displayName) async {
+  Future<void> addInfoToFirebase({required String displayName}) async {
     User? currentUser = _auth.currentUser;
     if (currentUser != null) {
       String now = DateTime.now().millisecondsSinceEpoch.toString();
       ChatUser newUser = ChatUser(
-          id: currentUser.uid,
-          name: displayName,
-          email: currentUser.email ?? '',
-          about: "Hey, I'm using We Chat!",
-          image: currentUser.photoURL ?? '',
-          createdAt: now,
-          isOnline: false,
-          lastActive: '',
-          pushToken: '');
+        id: currentUser.uid,
+        name: displayName,
+        email: currentUser.email ?? '',
+        about: "Hey, I'm using We Chat!",
+        image: currentUser.photoURL ?? '',
+        createdAt: now,
+        isOnline: false,
+        lastActive: '',
+        pushToken: '',
+      );
       await _firestore
           .collection('usersData')
           .doc(currentUser.uid)
@@ -108,13 +100,16 @@ class AuthService {
     }
   }
 
-  Future<void> sendPasswordResetMail(BuildContext context, String email,
-      GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey) async {
+  Future<void> sendPasswordResetMail(
+    BuildContext context,
+    String email,
+    GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey,
+  ) async {
     try {
       await _auth.sendPasswordResetEmail(email: email);
       if (context.mounted) {
-        CustomSnackBar.showSuccess(context,
-            "Password reset email sent to $email", scaffoldMessengerKey);
+        CustomSnackBar.showSuccess(
+            context, "Password reset email sent to $email", scaffoldMessengerKey);
       }
     } catch (e) {
       log("Error sending password reset email: $e");
@@ -141,18 +136,7 @@ class AuthService {
     try {
       final cred = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
-
-      await _firestore.collection('usersData').doc(cred.user?.uid).set({
-        'name': name,
-        'email': email,
-        'password': password,
-        'createdAt': Timestamp.now(),
-      });
-
-      await _firestore.collection('usersEmailList').doc('userList').update({
-        'email': FieldValue.arrayUnion([email]),
-      });
-
+      await addInfoToFirebase(displayName: name).then((value) => getSelfInfo());
       return cred.user;
     } catch (e) {
       log("Something went wrong: $e");
@@ -247,7 +231,7 @@ class AuthService {
 
   Future<void> getSelfInfo() async {
     await _firestore
-        .collection('users')
+        .collection('usersData')
         .doc(user?.uid)
         .get()
         .then((user) async {
@@ -259,7 +243,7 @@ class AuthService {
         await updateActiveStatus(true);
         log('My Data: ${user.data()}');
       } else {
-        await createUser(displayName!).then((value) => getSelfInfo());
+        log('User data not found.');
       }
     });
   }
@@ -278,8 +262,7 @@ class AuthService {
     return false;
   }
 
-  Stream<QuerySnapshot<Map<String, dynamic>>> getAllUsers(
-      List<String> userIds) {
+  Stream<QuerySnapshot<Map<String, dynamic>>> getAllUsers(List<String> userIds) {
     log('\nUserIds: $userIds');
 
     return _firestore
@@ -308,8 +291,7 @@ class AuthService {
         .snapshots();
   }
 
-  Future<void> sendFirstMessage(
-      ChatUser chatUser, String msg, Type type) async {
+  Future<void> sendFirstMessage(ChatUser chatUser, String msg, Type type) async {
     await _firestore
         .collection('users')
         .doc(chatUser.id)
@@ -321,7 +303,6 @@ class AuthService {
   Future<void> sendMessage(ChatUser chatUser, String msg, Type type) async {
     //message sending time (also used as id)
     final time = DateTime.now().millisecondsSinceEpoch.toString();
-
     //message to send
     final Message message = Message(
         toId: chatUser.id,
@@ -333,8 +314,9 @@ class AuthService {
 
     final ref = _firestore
         .collection('chats/${getConversationID(chatUser.id)}/messages/');
-    await ref.doc(time).set(message.toJson()).then((value) =>
-        sendPushNotification(chatUser, type == Type.text ? msg : 'image'));
+    await ref.doc(time).set(message.toJson());
+    //updating message read status
+    // await updateMessageReadStatus(message);
   }
 
   Future<void> updateMessageReadStatus(Message message) async {
@@ -351,46 +333,6 @@ class AuthService {
         .orderBy('sent', descending: true)
         .limit(1)
         .snapshots();
-  }
-
-  Future<void> sendPushNotification(ChatUser chatUser, String msg) async {
-    try {
-      final body = {
-        "message": {
-          "token": chatUser.pushToken,
-          "notification": {
-            "title": me?.name, //our name should be send
-            "body": msg,
-          },
-        }
-      };
-
-      // Firebase Project > Project Settings > General Tab > Project ID
-      const projectID = 'we-chat-75f13';
-
-      // get firebase admin token
-      final bearerToken = await NotificationAccessToken.getToken;
-
-      log('bearerToken: $bearerToken');
-
-      // handle null token
-      if (bearerToken == null) return;
-
-      var res = await post(
-        Uri.parse(
-            'https://fcm.googleapis.com/v1/projects/$projectID/messages:send'),
-        headers: {
-          HttpHeaders.contentTypeHeader: 'application/json',
-          HttpHeaders.authorizationHeader: 'Bearer $bearerToken'
-        },
-        body: jsonEncode(body),
-      );
-
-      log('Response status: ${res.statusCode}');
-      log('Response body: ${res.body}');
-    } catch (e) {
-      log('\nsendPushNotificationE: $e');
-    }
   }
 
   Future<void> updateMessage(Message message, String updatedMsg) async {
@@ -414,7 +356,6 @@ class AuthService {
         .then((p0) {
       log('Data Transferred: ${p0.bytesTransferred / 1000} kb');
     });
-
     //updating image in firestore database
     final imageUrl = await ref.getDownloadURL();
     await sendMessage(chatUser, imageUrl, Type.image);

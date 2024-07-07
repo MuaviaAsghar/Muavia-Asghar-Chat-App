@@ -39,6 +39,10 @@ class LoginScreenModel {
     await prefs.setString('password', password.text);
     await prefs.setBool('remember_me', rememberMe);
   }
+void clearText() {
+  password.clear();
+  email.clear();
+}
 
   Future<void> clearCredentials() async {
     final prefs = await SharedPreferences.getInstance();
@@ -83,7 +87,7 @@ class LoginScreenModel {
             if (await _auth.userExists()) {
               navigateToHomePage();
             } else {
-              await _auth.createUser(displayName ?? '').then((value) {
+              await _auth.addInfoToFirebase(displayName:displayName!).then((value) {
                 navigateToHomePage();
               });
             }
@@ -101,7 +105,8 @@ class LoginScreenModel {
             if (await _auth.userExists()) {
               navigateToHomePage();
             } else {
-              await _auth.createUser(displayName ?? '').then((value) {
+              
+              await _auth.addInfoToFirebase( displayName:displayName! ).then((value) {
                 navigateToHomePage();
               });
             }

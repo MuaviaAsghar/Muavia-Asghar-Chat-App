@@ -160,8 +160,11 @@ class _LoginScreenViewState extends State<LoginScreenView>
                           ),
                           const Gap(10),
                           GestureDetector(
-                            onTap: () =>
-                                model.login(context, navigateToHomePage),
+                            onTap: () {
+                                  model.login(context, navigateToHomePage);
+                         
+                            },
+        
                             child: Container(
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(10),
@@ -215,6 +218,7 @@ class _LoginScreenViewState extends State<LoginScreenView>
                       child: GestureDetector(
                         onTap: () {
                           navigateToSignupPage();
+                          model.clearText();
                         },
                         child: const Text(
                           ' SIGN-UP NOW',

@@ -5,8 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_notification_channel/flutter_notification_channel.dart';
-import 'package:flutter_notification_channel/notification_importance.dart';
+
 import 'package:say_anything_to_muavia/Home/home_screen_view.dart';
 import 'package:say_anything_to_muavia/Login/login_screen_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,7 +22,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  await _initializeFirebase();
+
 
   final prefs = await SharedPreferences.getInstance();
   final savedEmail = prefs.getString('email') ?? '';
@@ -80,14 +79,14 @@ class MyApp extends StatelessWidget {
   }
 }
 
-_initializeFirebase() async {
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+// _initializeFirebase() async {
+//    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  var result = await FlutterNotificationChannel().registerNotificationChannel(
-      description: 'For Showing Message Notification',
-      id: 'chats',
-      importance: NotificationImportance.IMPORTANCE_HIGH,
-      name: 'Chats');
+//    var result = await FlutterNotificationChannel().registerNotificationChannel(
+//        description: 'For Showing Message Notification',
+//        id: 'chats',
+//        importance: NotificationImportance.IMPORTANCE_HIGH,
+//      name: 'Chats');
 
-  log('\nNotification Channel Result: $result');
-}
+//    log('\nNotification Channel Result: $result');
+// }
