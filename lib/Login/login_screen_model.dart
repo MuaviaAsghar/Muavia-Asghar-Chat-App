@@ -51,7 +51,7 @@ void clearText() {
     await prefs.setBool('remember_me', rememberMe);
   }
 
-  Future<void> login(
+ Future<void> login(
       BuildContext context, VoidCallback navigateToHomePage) async {
     try {
       final user = await _auth.loginUserWithEmailAndPassword(
@@ -62,35 +62,20 @@ void clearText() {
 
       if (user != null) {
         dynamic userId = _firebaseauth.currentUser?.uid;
-        DocumentSnapshot doc = await _firestore
-            .collection('usersData')
-            .doc(_firebaseauth.currentUser?.uid)
-            .get();
-        final displayName = doc.get(
-          'name',
-        ) as String?;
 
         DocumentSnapshot userDoc =
             await _firestore.collection('usersData').doc(userId).get();
 
         if (userDoc.exists) {
           String storedPassword = userDoc.get('password');
-
           if (password.text == storedPassword) {
             log("Password matches, proceeding with login.");
-
             if (rememberMe) {
               await saveCredentials();
             } else {
               await clearCredentials();
             }
-            if (await _auth.userExists()) {
               navigateToHomePage();
-            } else {
-              await _auth.addInfoToFirebase(displayName:displayName!).then((value) {
-                navigateToHomePage();
-              });
-            }
           } else {
             log("Password does not match, updating the password in Firestore.");
             await _firestore.collection('usersData').doc(userId).update({
@@ -102,14 +87,7 @@ void clearText() {
             } else {
               await clearCredentials();
             }
-            if (await _auth.userExists()) {
-              navigateToHomePage();
-            } else {
-              
-              await _auth.addInfoToFirebase( displayName:displayName! ).then((value) {
                 navigateToHomePage();
-              });
-            }
           }
         } else {
           log("User document does not exist.");
@@ -126,5 +104,5 @@ void clearText() {
       }
       log("Error logging in: ${e.toString()}");
     }
-  }
+}
 }

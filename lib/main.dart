@@ -1,16 +1,21 @@
 import 'dart:developer';
 
-import 'package:adaptive_theme/adaptive_theme.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+// Suggested code may be subject to a license. Learn more: ~LicenseLog:3668231451.
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
 import 'package:say_anything_to_muavia/Home/home_screen_view.dart';
 import 'package:say_anything_to_muavia/Login/login_screen_view.dart';
+import 'package:say_anything_to_muavia/widgets/theme.dart';
+import 'package:say_anything_to_muavia/widgets/themeProvider.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'Colors/colors.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -22,7 +27,6 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
 
   final prefs = await SharedPreferences.getInstance();
   final savedEmail = prefs.getString('email') ?? '';
@@ -47,7 +51,7 @@ void main() async {
     }
   }
 
-  runApp(MyApp(initialScreen: initialScreen));
+  runApp(ChangeNotifierProvider(create:(context) => Themeprovider(),child: MyApp(initialScreen: initialScreen,),));
 }
 
 class MyApp extends StatelessWidget {
@@ -57,36 +61,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AdaptiveTheme(
-      light: ThemeData(
-        useMaterial3: true,
-        brightness: Brightness.light,
-        colorSchemeSeed: CustomColors.colors.secondaryColor,
-      ),
-      dark: ThemeData(
-        useMaterial3: true,
-        brightness: Brightness.dark,
-        colorSchemeSeed: CustomColors.colors.primaryColor,
-      ),
-      initial: AdaptiveThemeMode.system,
-      builder: (theme, darkTheme) => MaterialApp(
-        title: 'Adaptive Theme Demo',
-        theme: theme,
-        darkTheme: darkTheme,
-        home: initialScreen,
-      ),
+    return MaterialApp(
+      debugShowCheckedModeBanner: true,
+      title: 'Adaptive Theme Demo',
+      theme: Provider.of<Themeprovider>(context).themeData,
+      home: initialScreen,
     );
   }
 }
-
-// _initializeFirebase() async {
-//    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
-//    var result = await FlutterNotificationChannel().registerNotificationChannel(
-//        description: 'For Showing Message Notification',
-//        id: 'chats',
-//        importance: NotificationImportance.IMPORTANCE_HIGH,
-//      name: 'Chats');
-
-//    log('\nNotification Channel Result: $result');
-// }

@@ -1,17 +1,20 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+
 
 import '../Models/json_model.dart';
 import '../chat_screen/chat_screen_view.dart';
 
 class ChatScreenCard extends StatefulWidget {
-  final ChatUser user;
+  final ChatUser myuser;
 
   const ChatScreenCard({
     super.key,
-    required this.user,
+    required this.myuser,
   });
 
   @override
@@ -26,20 +29,22 @@ class _ChatScreenCardState extends State<ChatScreenCard> {
 
   @override
   Widget build(BuildContext context) {
-    final user = widget.user;
+    var user = widget.myuser;
 
     return Card(
       margin: EdgeInsets.symmetric(
           horizontal: MediaQuery.of(context).size.width * .04, vertical: 4),
       elevation: 1,
       child: InkWell(
-        onTap: () {
-          Navigator.push(
-              context,
-              MaterialPageRoute<void>(
-                  builder: (BuildContext context) => ChatScreenView(
-                        user: widget.user,
-                      )));
+        onTap: () async {
+      
+            Navigator.push(
+                context,
+                MaterialPageRoute<void>(
+                    builder: (BuildContext context) => ChatScreenView(
+                          user: widget.myuser,
+                        )));
+          
         },
         child: ListTile(
           leading: ClipRRect(
@@ -59,12 +64,17 @@ class _ChatScreenCardState extends State<ChatScreenCard> {
             user.about.isNotEmpty ? user.about : 'No status',
             maxLines: 1,
           ),
-          trailing: Container(
-              width: 15,
-              height: 15,
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  color: Colors.greenAccent.shade400)),
+          trailing: user.name == "Chat Bot"
+              ? Icon(CupertinoIcons.pin_fill,
+                  color: Colors.greenAccent.shade400, size: 18)
+              : Container(
+                  width: 13,
+                  height: 13,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.greenAccent.shade400,
+                  ),
+                ),
         ),
       ),
     );

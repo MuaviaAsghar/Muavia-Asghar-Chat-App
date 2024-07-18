@@ -1,19 +1,19 @@
 import 'dart:developer';
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:say_anything_to_muavia/widgets/snackbar.dart';
 import '../Models/json_model.dart';
 import '../Models/message_model.dart';
 
 class AuthService {
-  final _auth = FirebaseAuth.instance;
-  final _firestore = FirebaseFirestore.instance;
-  final storage = FirebaseStorage.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseStorage storage = FirebaseStorage.instance;
   FirebaseMessaging fMessaging = FirebaseMessaging.instance;
   User? get user => _auth.currentUser;
 
@@ -31,20 +31,20 @@ class AuthService {
     });
   }
 
-Future<void> getFirebaseMessagingToken() async {
-  await fMessaging.requestPermission();
-  await fMessaging.getToken().then((t) async {
-    if (t != null) {
-      me?.pushToken = t;
-      await _firestore
-          .collection('usersData')
-          .doc(user!.uid)
-          .update({"pushToken": t}); // Corrected this line
-      log('Push Token: $t');
-    }
-  });
-}
-
+  Future<void> getFirebaseMessagingToken() async {
+    await fMessaging.requestPermission();
+    await fMessaging.getToken().then((t) async {
+      if (t != null) {
+        me?.pushToken = t;
+        // fMessaging.setAutoInitEnabled(enabled)
+        await _firestore
+            .collection('usersData')
+            .doc(user!.uid)
+            .update({"pushToken": t});
+        log('Push Token: $t');
+      }
+    });
+  }
 
   Future<void> initializeMe() async {
     User? currentUser = _auth.currentUser;
@@ -65,6 +65,7 @@ Future<void> getFirebaseMessagingToken() async {
         isOnline: false,
         lastActive: '',
         pushToken: '',
+        password: '',
       );
     } else {
       log('No user is currently signed in.');
@@ -83,28 +84,6 @@ Future<void> getFirebaseMessagingToken() async {
     return false;
   }
 
-  Future<void> addInfoToFirebase({required String displayName}) async {
-    User? currentUser = _auth.currentUser;
-    if (currentUser != null) {
-      String now = DateTime.now().millisecondsSinceEpoch.toString();
-      ChatUser newUser = ChatUser(
-        id: currentUser.uid,
-        name: displayName,
-        email: currentUser.email ?? '',
-        about: "Hey, I'm using We Chat!",
-        image: currentUser.photoURL ?? '',
-        createdAt: now,
-        isOnline: false,
-        lastActive: '',
-        pushToken: '',
-      );
-      await _firestore
-          .collection('usersData')
-          .doc(currentUser.uid)
-          .set(newUser.toJson());
-    }
-  }
-
   Future<void> sendPasswordResetMail(
     BuildContext context,
     String email,
@@ -113,8 +92,8 @@ Future<void> getFirebaseMessagingToken() async {
     try {
       await _auth.sendPasswordResetEmail(email: email);
       if (context.mounted) {
-        CustomSnackBar.showSuccess(
-            context, "Password reset email sent to $email", scaffoldMessengerKey);
+        CustomSnackBar.showSuccess(context,
+            "Password reset email sent to $email", scaffoldMessengerKey);
       }
     } catch (e) {
       log("Error sending password reset email: $e");
@@ -141,7 +120,25 @@ Future<void> getFirebaseMessagingToken() async {
     try {
       final cred = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
-      await addInfoToFirebase(displayName: name).then((value) => getSelfInfo());
+      String now = DateTime.now().millisecondsSinceEpoch.toString();
+      ChatUser newUser = ChatUser(
+        id: cred.user!.uid,
+        name: name,
+        email: email,
+        about: "Hey, I'm using We Chat!",
+        image: '',
+        createdAt: now,
+        isOnline: false,
+        lastActive: '',
+        password: password,
+        pushToken: '',
+      );
+
+      await _firestore
+          .collection('usersData')
+          .doc(cred.user!.uid)
+          .set(newUser.toJson());
+      await getSelfInfo();
       return cred.user;
     } catch (e) {
       log("Something went wrong: $e");
@@ -267,13 +264,27 @@ Future<void> getFirebaseMessagingToken() async {
     return false;
   }
 
-  Stream<QuerySnapshot<Map<String, dynamic>>> getAllUsers(List<String> userIds) {
-    log('\nUserIds: $userIds');
-
+  Stream<QuerySnapshot<Map<String, dynamic>>> getAllUsers() {
     return _firestore
         .collection('usersData')
         .where('id', isNotEqualTo: user?.uid)
         .snapshots();
+  }
+
+  Future<void> addChatbotUser() async {
+    final chatbotRef =
+        FirebaseFirestore.instance.collection('usersData').doc('chatbot');
+    final chatbotDoc = await chatbotRef.get();
+    const chatBotUrl =
+        "https://firebasestorage.googleapis.com/v0/b/say-to-muavia.appspot.com/o/chatbot%20pfp%2Fchatbot%20pfp.png?alt=media&token=8a0513d4-3685-4380-b41e-7f64802f2062";
+    if (!chatbotDoc.exists) {
+      await chatbotRef.set({
+        'id': 'chatbot',
+        'name': 'Chat Bot',
+        'image': chatBotUrl,
+        'about': 'Chat Bot Powered by Gemini AI',
+      });
+    }
   }
 
   Future<void> updateUserImageURL(String id, String url) async {
@@ -289,6 +300,12 @@ Future<void> getFirebaseMessagingToken() async {
       ? '${user?.uid}_$id'
       : '${id}_${user?.uid}';
 
+  // Stream<QuerySnapshot<Map<String, dynamic>>> getAllMessages(ChatUser user) {
+  //   return _firestore
+  //       .collection('chats/${getConversationID(user.id)}/messages/')
+  //       .orderBy('sent', descending: true)
+  //       .snapshots();
+  // }
   Stream<QuerySnapshot<Map<String, dynamic>>> getAllMessages(ChatUser user) {
     return _firestore
         .collection('chats/${getConversationID(user.id)}/messages/')
@@ -296,42 +313,69 @@ Future<void> getFirebaseMessagingToken() async {
         .snapshots();
   }
 
-  Future<void> sendFirstMessage(ChatUser chatUser, String msg, Type type) async {
+  Future<void> sendFirstMessage(
+      ChatUser chatUser, String msg, Type type) async {
+    log('Sending first message.');
     await _firestore
-        .collection('users')
-        .doc(chatUser.id)
-        .collection('my_users')
+        .collection('chats/${getConversationID(chatUser.id)}/messages/')
         .doc(user?.uid)
         .set({}).then((value) => sendMessage(chatUser, msg, type));
   }
 
   Future<void> sendMessage(ChatUser chatUser, String msg, Type type) async {
-    //message sending time (also used as id)
     final time = DateTime.now().millisecondsSinceEpoch.toString();
-    //message to send
-    final Message message = Message(
-        toId: chatUser.id,
-        msg: msg,
+    final CMessage message = CMessage(
+      toId: chatUser.id,
+      msg: msg,
+      read: '',
+      type: type,
+      fromId: user!.uid,
+      sent: time,
+    );
+
+    // Check if the recipient is the chatbot
+    if (chatUser.id == 'chatbot') {
+      // Send user message
+      await _firestore
+          .collection('chats/${getConversationID(chatUser.id)}/messages/')
+          .doc(time)
+          .set(message.toJson());
+      log('Message sent to chatbot');
+      // Generate response from chatbot
+      final model = GenerativeModel(
+        model: 'gemini-1.5-flash',
+        apiKey:
+            'AIzaSyBFrf9M29zQt06yKJTyDlmo0NfgIZYxvtk', // Replace with your actual API key
+      );
+      final content = [Content.text(msg)];
+      final response = await model.generateContent(content);
+
+      final chatbotMessage = CMessage(
+        toId: user!.uid,
+        msg: response.text!,
         read: '',
         type: type,
-        fromId: user!.uid,
-        sent: time);
+        fromId: chatUser.id,
+        sent: time,
+      );
 
-    final ref = _firestore
-        .collection('chats/${getConversationID(chatUser.id)}/messages/');
-    await ref.doc(time).set(message.toJson());
-    //updating message read status
-    // await updateMessageReadStatus(message);
+      // Send chatbot response
+      await _firestore
+          .collection('chats/${getConversationID(chatUser.id)}/messages/')
+          .doc('${time}_bot') // Append '_bot' to distinguish from user message
+          .set(chatbotMessage.toJson());
+      log('Message recieved from chatbot');
+
+    } else {
+      // Regular user-to-user message
+
+      await _firestore
+          .collection('chats/${getConversationID(chatUser.id)}/messages/')
+          .doc(time)
+          .set(message.toJson());
+    }
   }
 
-  Future<void> updateMessageReadStatus(Message message) async {
-    _firestore
-        .collection('chats/${getConversationID(message.fromId)}/messages/')
-        .doc(message.sent)
-        .update({'read': DateTime.now().millisecondsSinceEpoch.toString()});
-  }
-
-  //get only last message of a specific chat
   Stream<QuerySnapshot<Map<String, dynamic>>> getLastMessage(ChatUser user) {
     return _firestore
         .collection('chats/${getConversationID(user.id)}/messages/')
@@ -339,8 +383,40 @@ Future<void> getFirebaseMessagingToken() async {
         .limit(1)
         .snapshots();
   }
+  // Future<void> sendMessage(ChatUser chatUser, String msg, Type type,) async {
+  //   final time = DateTime.now().millisecondsSinceEpoch.toString();
+  //   final CMessage message = CMessage(
+  //     toId: chatUser.id, // Assuming 'chatbot' is the ID of your chat bot user
+  //     msg: msg,
+  //     read: '',
+  //     type: type,
+  //     fromId: user!.uid,
+  //     sent: time,
+  //   );
 
-  Future<void> updateMessage(Message message, String updatedMsg) async {
+  //   final ref = _firestore.collection('chats/${getConversationID('chatbot')}/chatBot/');
+  //   await ref.doc(time).set(message.toJson());
+  // }
+
+  // // Function to get messages from Firestore (example function, adjust as needed)
+  // Stream<QuerySnapshot<Map<String, dynamic>>> getLastMessage(ChatUser user) {
+  //   return _firestore
+  //       .collection('chats/${getConversationID(user.id)}/messages/')
+  //       .orderBy('sent', descending: true)
+  //       .limit(1)
+  //       .snapshots();
+  // }
+
+  Future<void> updateMessageReadStatus(CMessage message) async {
+    _firestore
+        .collection('chats/${getConversationID(message.fromId)}/messages/')
+        .doc(message.sent)
+        .update({'read': DateTime.now().millisecondsSinceEpoch.toString()});
+  }
+
+  //get only last message of a specific chat
+
+  Future<void> updateMessage(CMessage message, String updatedMsg) async {
     await _firestore
         .collection('chats/${getConversationID(message.toId)}/messages/')
         .doc(message.sent)
@@ -366,7 +442,7 @@ Future<void> getFirebaseMessagingToken() async {
     await sendMessage(chatUser, imageUrl, Type.image);
   }
 
-  Future<void> deleteMessage(Message message) async {
+  Future<void> deleteMessage(CMessage message) async {
     await _firestore
         .collection('chats/${getConversationID(message.toId)}/messages/')
         .doc(message.sent)
@@ -389,7 +465,7 @@ Future<void> getFirebaseMessagingToken() async {
     _firestore.collection('users').doc(user?.uid).update({
       'is_online': isOnline,
       'last_active': DateTime.now().millisecondsSinceEpoch.toString(),
-      'push_token': me?.pushToken,
+      'pushToken': me?.pushToken,
     });
   }
 }

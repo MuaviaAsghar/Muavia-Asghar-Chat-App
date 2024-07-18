@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:say_anything_to_muavia/Models/json_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../authentication/auth.dart';
@@ -41,6 +42,47 @@ class HomeScreenModel {
       }
     } else {
       log('User ID is null');
+    }
+  }
+
+  Future<List<ChatUser>> fetchAllUsers() async {
+    try {
+      QuerySnapshot<Map<String, dynamic>> snapshot =
+          await _firestore.collection('usersData').get();
+      List<ChatUser> users = snapshot.docs
+          .map((doc) => ChatUser.fromJson(doc.data()))
+          .where((user) => user.id != userId && user.id != 'chatbot') // Filter out current user and chatbot
+          .toList();
+      return users;
+    } catch (e) {
+      log('Error fetching all users: $e');
+      return [];
+    }
+  }
+
+  Future<void> addChatUser(ChatUser user) async {
+    try {
+      await _firestore.collection('chatUsers').doc(userId).set({
+        'chatUsers': FieldValue.arrayUnion([user.id])
+      }, SetOptions(merge: true));
+ 
+      log('Added user to chat list: ${user.name}');
+    } catch (e) {
+      log('Error adding user to chat list: $e');
+    }
+  }
+
+  Future<List<String>> fetchChatUsers() async {
+    try {
+      DocumentSnapshot<Map<String, dynamic>> doc = await _firestore
+          .collection('chatUsers')
+          .doc(userId)
+          .get();
+      List<String> chatUsers = doc.data()?['chatUsers']?.cast<String>() ?? [];
+      return chatUsers;
+    } catch (e) {
+      log('Error fetching chat users: $e');
+      return [];
     }
   }
 

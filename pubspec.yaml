@@ -38,7 +38,6 @@ dependencies:
   firebase_core: ^3.0.0
   firebase_auth: ^5.1.0
   shared_preferences: ^2.2.3
-  adaptive_theme: ^3.6.0
   gap: ^3.0.1
   animated_text_kit: ^4.2.2
   email_otp: ^2.1.2
@@ -49,10 +48,14 @@ dependencies:
   emoji_picker_flutter: ^2.2.0
   flutter_notification_channel: ^3.1.0
   firebase_messaging: ^15.0.2
-  # flutter_local_notifications: ^15.0.0
-  googleapis_auth: ^1.6.0
+  flutter_local_notifications: ^15.0.0
   http: ^1.2.1
   gallery_saver_updated: ^3.0.0
+  google_generative_ai: ^0.4.3
+  file_picker: ^8.0.6
+  provider: ^6.1.2
+
+
   
 dev_dependencies:
   flutter_test:

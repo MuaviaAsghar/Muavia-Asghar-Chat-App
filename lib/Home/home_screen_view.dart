@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
@@ -7,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../Login/login_screen_view.dart';
 import '../Models/json_model.dart';
+import '../chat_screen/chat_screen_view.dart';
 import '../profile_screen/profile_screen.dart';
 import '../setting_screen/setting_screen_view.dart';
 import '../widgets/chat_screen.dart';
@@ -21,14 +21,32 @@ class HomeScreenView extends StatefulWidget {
 
 class _HomeScreenViewState extends State<HomeScreenView> {
   late final List<ChatUser> _list = [];
-
   late HomeScreenModel model;
   final List<ChatUser> _searchlist = [];
-  bool _isSearching = false; // Removed 'final' to allow changes
+  bool _isSearching = false;
+  List<ChatUser> _allUsers = [];
+  List<String> _chatUserIds = [];
+
   @override
   void initState() {
     super.initState();
     model = HomeScreenModel();
+    model.auth.addChatbotUser();
+    _loadChatUsers();
+  }
+
+  Future<void> _loadChatUsers() async {
+    List<String> chatUserIds = await model.fetchChatUsers();
+    setState(() {
+      _chatUserIds = chatUserIds;
+    });
+  }
+
+  Future<void> _loadAllUsers() async {
+    List<ChatUser> allUsers = await model.fetchAllUsers();
+    setState(() {
+      _allUsers = allUsers;
+    });
   }
 
   @override
@@ -80,8 +98,57 @@ class _HomeScreenViewState extends State<HomeScreenView> {
                 : const Text("ChatApp"),
             centerTitle: true,
           ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () async {
+              await _loadAllUsers();
+              showDialog<String>(
+                context: context,
+                builder: (BuildContext context) => Dialog(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        const Text('Select a user to chat with:'),
+                        const SizedBox(height: 15),
+                        ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: _allUsers.length,
+                          itemBuilder: (context, index) {
+                            return ListTile(
+                              title: Text(_allUsers[index].name),
+                              subtitle: Text(_allUsers[index].email),
+                              onTap: () async {
+                                await model.addChatUser(_allUsers[index]);
+                                if(context.mounted){
+                                Navigator.pop(context);
+                             Navigator.push(
+                                    context,
+                                    MaterialPageRoute<void>(
+                                        builder: (BuildContext context) =>
+                                            ChatScreenView(
+                                                user: _allUsers[index])));}   
+                              },
+                            );
+                          },
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: const Text('Close'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+            child: const Icon(Icons.add),
+          ),
           body: StreamBuilder(
-            stream: model.auth.getAllUsers([]),
+            stream: model.auth.getAllUsers(),
             builder: (
               context,
               AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot,
@@ -102,16 +169,27 @@ class _HomeScreenViewState extends State<HomeScreenView> {
                 try {
                   log('Document data: ${doc.data()}');
                   var chatUserModel = ChatUser.fromJson(doc.data());
-                  _list.add(chatUserModel);
+                  if (_chatUserIds.contains(chatUserModel.id) ||
+                      chatUserModel.id == 'chatbot') {
+                    _list.add(chatUserModel);
+                  }
                 } catch (e) {
                   log("Error parsing document ${doc.id}: ${e.toString()}");
                 }
               }
 
+              // Ensure the Chatbot user is always at the top
+              _list.sort((a, b) {
+                if (a.id == 'chatbot') return -1;
+                if (b.id == 'chatbot') return 1;
+                return 0;
+              });
+
               if (_list.isEmpty) {
                 return const Center(child: Text("No data found"));
               } else {
                 return ListView.builder(
+                  shrinkWrap: true,
                   physics: const BouncingScrollPhysics(),
                   padding: EdgeInsets.only(
                     top: MediaQuery.of(context).size.height * .01,
@@ -119,7 +197,8 @@ class _HomeScreenViewState extends State<HomeScreenView> {
                   itemCount: _isSearching ? _searchlist.length : _list.length,
                   itemBuilder: (context, index) {
                     return ChatScreenCard(
-                        user: _isSearching ? _searchlist[index] : _list[index]);
+                        myuser:
+                            _isSearching ? _searchlist[index] : _list[index]);
                   },
                 );
               }
@@ -127,39 +206,50 @@ class _HomeScreenViewState extends State<HomeScreenView> {
           ),
           drawer: Drawer(
             child: FutureBuilder(
-              future: model.auth.initializeMe(),
+              future: model.fetchUserData(),
               builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const CircularProgressIndicator();
+                  return const Center(
+                    child: SizedBox(
+                      height: 100,
+                      width: 100,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 10,
+                        color: Colors.purple,
+                        valueColor: AlwaysStoppedAnimation(Colors.black),
+                        semanticsValue: 'Loading',
+                        semanticsLabel: 'Loading',
+                      ),
+                    ),
+                  );
                 } else {
                   return Column(
                     children: [
                       UserAccountsDrawerHeader(
                         decoration: const BoxDecoration(color: Colors.black),
                         accountName: Text(
-                          model.auth.me?.name ?? 'No Name',
+                          model.name ?? 'No Name',
                           style: const TextStyle(fontSize: 18),
                         ),
-                        accountEmail: Text(model.auth.me?.email ?? ''),
+                        accountEmail: Text(model.email ?? ''),
                         currentAccountPictureSize: const Size.square(50),
                         currentAccountPicture: ClipRRect(
                           borderRadius: BorderRadius.circular(
                               MediaQuery.of(context).size.height * .1),
-                          child: model.auth.me?.image != null &&
-                                  model.auth.me!.image.isNotEmpty
+                          child: model.image != null && model.image!.isNotEmpty
                               ? CachedNetworkImage(
                                   width: MediaQuery.sizeOf(context).width * 2,
                                   height: MediaQuery.sizeOf(context).height * 2,
                                   fit: BoxFit.cover,
-                                  imageUrl: model.auth.me!.image,
+                                  imageUrl: model.image!,
                                   errorWidget: (context, url, error) =>
                                       CircleAvatar(
-                                    child: Text(model.auth.me!.name[0]),
+                                    child: Text(model.name![0]),
                                   ),
                                 )
                               : CircleAvatar(
                                   radius: MediaQuery.sizeOf(context).height * 2,
-                                  child: Text(model.auth.me!.name[0]),
+                                  child: Text(model.name![0]),
                                 ),
                         ),
                       ),
@@ -194,7 +284,7 @@ class _HomeScreenViewState extends State<HomeScreenView> {
                         padding: const EdgeInsets.only(bottom: 20),
                         child: ListTile(
                           leading: const Icon(Icons.settings),
-                          title: const Text('Settings'),
+                          title: const Text('Setting'),
                           onTap: () {
                             Navigator.of(context).push(
                               MaterialPageRoute(

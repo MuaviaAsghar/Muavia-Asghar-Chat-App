@@ -14,7 +14,7 @@ import 'dialogs.dart';
 class MessageCard extends StatefulWidget {
   const MessageCard({super.key, required this.message});
 
-  final Message message;
+  final CMessage message;
   @override
   State<MessageCard> createState() => _MessageCardState();
 }
@@ -121,7 +121,7 @@ class _MessageCardState extends State<MessageCard> {
             Text(
               MyDateUtil.getFormattedTime(
                   context: context, time: widget.message.sent),
-              style: const TextStyle(fontSize: 13, color: Colors.black54),
+              style: const TextStyle(fontSize: 13, ),
             ),
           ],
         ),
@@ -235,7 +235,6 @@ class _MessageCardState extends State<MessageCard> {
               //separator or divider
               if (isMe)
                 Divider(
-                  color: Colors.black54,
                   endIndent: MediaQuery.sizeOf(context).width * .04,
                   indent: MediaQuery.sizeOf(context).width * .04,
                 ),
@@ -269,7 +268,6 @@ class _MessageCardState extends State<MessageCard> {
 
               //separator or divider
               Divider(
-                color: Colors.black54,
                 endIndent: MediaQuery.sizeOf(context).width * .04,
                 indent: MediaQuery.sizeOf(context).width * .04,
               ),
@@ -379,10 +377,7 @@ class _OptionItem extends StatelessWidget {
             icon,
             Flexible(
                 child: Text('    $name',
-                    style: const TextStyle(
-                        fontSize: 15,
-                        color: Colors.black54,
-                        letterSpacing: 0.5)))
+                    style: const TextStyle(fontSize: 15, letterSpacing: 0.5)))
           ]),
         ));
   }

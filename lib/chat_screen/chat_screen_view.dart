@@ -25,7 +25,7 @@ class ChatScreenView extends StatefulWidget {
 
 class _ChatScreenViewState extends State<ChatScreenView> {
   //for storing all messages
-  List<Message> _list = [];
+  List<CMessage> _list = [];
 
   //for handling message text changes
   final _textController = TextEditingController();
@@ -67,8 +67,6 @@ class _ChatScreenViewState extends State<ChatScreenView> {
             flexibleSpace: _appBar(),
           ),
 
-          backgroundColor: const Color.fromARGB(255, 234, 248, 255),
-
           body: SafeArea(
             child: Column(
               children: [
@@ -87,7 +85,7 @@ class _ChatScreenViewState extends State<ChatScreenView> {
                         case ConnectionState.done:
                           final data = snapshot.data?.docs;
                           _list = data
-                                  ?.map((e) => Message.fromJson(e.data()))
+                                  ?.map((e) => CMessage.fromJson(e.data()))
                                   .toList() ??
                               [];
 
@@ -165,8 +163,9 @@ class _ChatScreenViewState extends State<ChatScreenView> {
                     //back button
                     IconButton(
                         onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.arrow_back,
-                            color: Colors.black54)),
+                        icon: const Icon(
+                          Icons.arrow_back,
+                        )),
 
                     //user profile picture
                     ClipRRect(
@@ -195,9 +194,7 @@ class _ChatScreenViewState extends State<ChatScreenView> {
                         //user name
                         Text(list.isNotEmpty ? list[0].name : widget.user.name,
                             style: const TextStyle(
-                                fontSize: 16,
-                                color: Colors.black87,
-                                fontWeight: FontWeight.w500)),
+                                fontSize: 16, fontWeight: FontWeight.w500)),
 
                         //for adding some space
                         const SizedBox(height: 2),
@@ -214,7 +211,8 @@ class _ChatScreenViewState extends State<ChatScreenView> {
                                     context: context,
                                     lastActive: widget.user.lastActive),
                             style: const TextStyle(
-                                fontSize: 13, color: Colors.black54)),
+                              fontSize: 13,
+                            )),
                       ],
                     )
                   ],

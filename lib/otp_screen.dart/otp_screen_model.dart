@@ -13,7 +13,7 @@ class OtpScreenModel {
   final TextEditingController otptext = TextEditingController();
   final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
       GlobalKey<ScaffoldMessengerState>();
-      final FirebaseFirestore _firestore=FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   final EmailOTP myAuth = EmailOTP();
   final FocusNode otpFocus = FocusNode();
@@ -37,16 +37,20 @@ class OtpScreenModel {
       if (isOtpSent) {
         log("OTP sent to $email");
       } else {
-              if(context.mounted){
-        CustomSnackBar.showError(context ,"Failed to send OTP",scaffoldMessengerKey);
-      
-        log("Failed to send OTP to $email");}
+        if (context.mounted) {
+          CustomSnackBar.showError(
+              context, "Failed to send OTP", scaffoldMessengerKey);
+
+          log("Failed to send OTP to $email");
+        }
       }
     } catch (e) {
-      if(context.mounted){
-       CustomSnackBar.showError(context,"Error: ${e.toString()}",scaffoldMessengerKey);
-    
-      log("Error sending OTP: ${e.toString()}");}
+      if (context.mounted) {
+        CustomSnackBar.showError(
+            context, "Error: ${e.toString()}", scaffoldMessengerKey);
+
+        log("Error sending OTP: ${e.toString()}");
+      }
     }
   }
 
@@ -55,33 +59,52 @@ class OtpScreenModel {
     try {
       log("Verifying OTP: ${otptext.text}");
       bool isOtpValid = await myAuth.verifyOTP(otp: otptext.text);
+      DocumentReference userDocRef =_firestore
+          .collection('userEmailList')
+          .doc('userList');
       if (isOtpValid) {
         log("OTP is valid, creating user.");
-        if(context.mounted){
-        await _auth.createUserWithEmailAndPassword(
-          context:context,
-          name: name,
-          email: email,
-          password: password, 
-        );}
-             await _firestore.collection('usersEmailList').doc('userList').update({
-        'email': FieldValue.arrayUnion([email]),
-      })
-        .then((value) => navigateToLoginPage(context));
-  
+        if (context.mounted) {
+          await _auth.createUserWithEmailAndPassword(
+            context: context,
+            name: name,
+            email: email,
+            password: password,
+          );
+        }
+
+        bool docExists = (await userDocRef.get()).exists;
+// Suggested code may be subject to a license. Learn more: ~LicenseLog:3010724091.
+        if (docExists) {
+          // Document exists, update the email list
+          await userDocRef.update({
+            'emails': FieldValue.arrayUnion([email]),
+          });
+        } else {
+          // Document does not exist, create it with the email list
+          await userDocRef.set({
+            'emails': [email],
+          });
+        }
+        if (context.mounted) {
+          await navigateToLoginPage(context);
+        }
         log("User Created Successfully");
-        
       } else {
-        if(context.mounted){
-        CustomSnackBar.showError(context ,"Invalid OTP",scaffoldMessengerKey);
-      
-        log("Invalid OTP");}
+        if (context.mounted) {
+          CustomSnackBar.showError(
+              context, "Invalid OTP", scaffoldMessengerKey);
+
+          log("Invalid OTP");
+        }
       }
     } catch (e) {
-          if(context.mounted){
-      CustomSnackBar.showError(context ,"Failed to verify OTP: ${e.toString()}",scaffoldMessengerKey);
+      if (context.mounted) {
+        CustomSnackBar.showError(context,
+            "Failed to verify OTP: ${e.toString()}", scaffoldMessengerKey);
 
-      log("Error verifying OTP: ${e.toString()}");}
+        log("Error verifying OTP: ${e.toString()}");
+      }
     }
   }
 }

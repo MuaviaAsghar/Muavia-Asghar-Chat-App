@@ -35,6 +35,9 @@ class _LoginScreenViewState extends State<LoginScreenView>
     model.emailFocus.removeListener(_updateKeyboardVisibility);
     model.passwordFocus.removeListener(_updateKeyboardVisibility);
     model.emailFocus.dispose();
+    model.password.dispose();
+    model.email.dispose();
+
     model.passwordFocus.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
@@ -98,12 +101,13 @@ class _LoginScreenViewState extends State<LoginScreenView>
           toolbarHeight: 110,
         ),
         body: Column(
+          
           children: [
             Expanded(
               child: Stack(
+              
                 children: [
-                  Align(
-                    alignment: Alignment.center,
+                  Align(                    alignment: Alignment.center,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Column(

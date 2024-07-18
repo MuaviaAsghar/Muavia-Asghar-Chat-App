@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:say_anything_to_muavia/ForgetPass/forget_pass_view.dart';
+import 'package:say_anything_to_muavia/widgets/theme.dart';
+import 'package:say_anything_to_muavia/widgets/themeProvider.dart';
 
 class SettingScreenView extends StatefulWidget {
-  const SettingScreenView({super.key});
+  const SettingScreenView({Key? key}) : super(key: key);
 
   @override
   State<SettingScreenView> createState() => _SettingScreenViewState();
@@ -11,12 +14,34 @@ class SettingScreenView extends StatefulWidget {
 class _SettingScreenViewState extends State<SettingScreenView> {
   @override
   Widget build(BuildContext context) {
-    return  Scaffold(
+    return Scaffold(
       appBar: AppBar(
         title: const Text("Setting"),
         centerTitle: true,
       ),
-      body: Column(children: [ListTile(title: const Text("Setting"),onTap: () =>  Navigator.of(context).push(MaterialPageRoute(builder: (context) => const ForgetPassView())),leading: const Icon(Icons.settings),trailing: const Icon(Icons.arrow_right),)],)
+      body: Column(
+        children: [
+          ListTile(
+            title: const Text("Change Password"),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => const ForgetPassView(),
+              ),
+            ),
+            trailing: const Icon(Icons.arrow_right),
+          ),
+          ListTile(
+            title: Text("Change Theme"),
+            trailing: Switch(
+              value: Provider.of<Themeprovider>(context).themeData == darkmode,
+              onChanged: (value) {
+                Provider.of<Themeprovider>(context, listen: false)
+                    .changeTheme();
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
