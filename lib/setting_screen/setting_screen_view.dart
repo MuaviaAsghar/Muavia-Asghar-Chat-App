@@ -5,7 +5,7 @@ import 'package:say_anything_to_muavia/widgets/theme.dart';
 import 'package:say_anything_to_muavia/widgets/themeProvider.dart';
 
 class SettingScreenView extends StatefulWidget {
-  const SettingScreenView({Key? key}) : super(key: key);
+  const SettingScreenView({super.key});
 
   @override
   State<SettingScreenView> createState() => _SettingScreenViewState();
