@@ -2,7 +2,6 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:email_otp/email_otp.dart';
-
 import 'package:flutter/material.dart';
 import 'package:say_anything_to_muavia/Login/login_screen_view.dart';
 import 'package:say_anything_to_muavia/widgets/snackbar.dart';
@@ -15,7 +14,6 @@ class OtpScreenModel {
       GlobalKey<ScaffoldMessengerState>();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  final EmailOTP myAuth = EmailOTP();
   final FocusNode otpFocus = FocusNode();
   final AuthService _auth = AuthService();
   bool isKeyboardVisible = false;
@@ -33,7 +31,7 @@ class OtpScreenModel {
 
   Future<void> sendOtp(BuildContext context, String email) async {
     try {
-      bool isOtpSent = await myAuth.sendOTP();
+      bool isOtpSent = await EmailOTP.sendOTP(email: email);
       if (isOtpSent) {
         log("OTP sent to $email");
       } else {
@@ -58,10 +56,9 @@ class OtpScreenModel {
       BuildContext context, String name, String email, String password) async {
     try {
       log("Verifying OTP: ${otptext.text}");
-      bool isOtpValid = await myAuth.verifyOTP(otp: otptext.text);
-      DocumentReference userDocRef =_firestore
-          .collection('userEmailList')
-          .doc('userList');
+      bool isOtpValid = EmailOTP.verifyOTP(otp: otptext.text);
+      DocumentReference userDocRef =
+          _firestore.collection('userEmailList').doc('userList');
       if (isOtpValid) {
         log("OTP is valid, creating user.");
         if (context.mounted) {

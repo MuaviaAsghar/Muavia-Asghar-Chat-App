@@ -1,10 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
-
 
 import '../Models/json_model.dart';
 import '../chat_screen/chat_screen_view.dart';
@@ -37,14 +34,12 @@ class _ChatScreenCardState extends State<ChatScreenCard> {
       elevation: 1,
       child: InkWell(
         onTap: () async {
-      
-            Navigator.push(
-                context,
-                MaterialPageRoute<void>(
-                    builder: (BuildContext context) => ChatScreenView(
-                          user: widget.myuser,
-                        )));
-          
+          Navigator.push(
+              context,
+              MaterialPageRoute<void>(
+                  builder: (BuildContext context) => ChatScreenView(
+                        user: widget.myuser,
+                      )));
         },
         child: ListTile(
           leading: ClipRRect(

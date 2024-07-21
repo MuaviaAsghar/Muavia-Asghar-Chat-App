@@ -35,12 +35,11 @@ class _OtpScreenViewState extends State<OtpScreenView>
     model.otpFocus.addListener(_updateKeyboardVisibility);
     WidgetsBinding.instance.addObserver(this);
 
-    model.myAuth.setConfig(
+    EmailOTP.config(
       appEmail: "newgamer445@gmail.com",
       appName: "Chat app",
-      userEmail: widget.email,
       otpLength: 6,
-      otpType: OTPType.digitsOnly,
+      otpType: OTPType.numeric,
     );
     // Send OTP when the screen is initialized
     model.sendOtp(context, widget.email);

@@ -1,6 +1,5 @@
 import 'dart:developer';
 
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 // Suggested code may be subject to a license. Learn more: ~LicenseLog:3668231451.
@@ -51,7 +50,12 @@ void main() async {
     }
   }
 
-  runApp(ChangeNotifierProvider(create:(context) => Themeprovider(),child: MyApp(initialScreen: initialScreen,),));
+  runApp(ChangeNotifierProvider(
+    create: (context) => Themeprovider(),
+    child: MyApp(
+      initialScreen: initialScreen,
+    ),
+  ));
 }
 
 class MyApp extends StatelessWidget {

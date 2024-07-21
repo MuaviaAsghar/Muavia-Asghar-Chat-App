@@ -11,7 +11,6 @@ import 'package:say_anything_to_muavia/authentication/auth.dart';
 import '../Models/json_model.dart';
 import '../Models/message_model.dart';
 import '../my_date_util/my_date_util.dart';
-import '../profile_screen/profile_screen.dart';
 import '../profile_screen/view_profile_screen.dart';
 import '../widgets/dialogs/message_card.dart';
 
@@ -39,16 +38,16 @@ class _ChatScreenViewState extends State<ChatScreenView> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: FocusScope.of(context).unfocus,
-    
-        // onWillPop: () {
-        //   if (_showEmoji) {
-        //     setState(() => _showEmoji = !_showEmoji);
-        //     return Future.value(false);
-        //   } else {
-        //     return Future.value(true);
-        //   }
-        // },
-  child: PopScope(
+
+      // onWillPop: () {
+      //   if (_showEmoji) {
+      //     setState(() => _showEmoji = !_showEmoji);
+      //     return Future.value(false);
+      //   } else {
+      //     return Future.value(true);
+      //   }
+      // },
+      child: PopScope(
         //if emojis are shown & back button is pressed then hide emojis
         //or else simple close current screen on back button click
         canPop: !_showEmoji,
@@ -79,7 +78,7 @@ class _ChatScreenViewState extends State<ChatScreenView> {
                         //if data is loading
                         case ConnectionState.waiting:
                         case ConnectionState.none:
-                           return const SizedBox();
+                          return const SizedBox();
 
                         //if some or all data is loaded then show it
                         case ConnectionState.active:
