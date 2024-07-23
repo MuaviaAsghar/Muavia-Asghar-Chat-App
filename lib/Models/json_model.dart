@@ -46,7 +46,7 @@ class ChatUser {
     data['id'] = id;
     data['last_active'] = lastActive;
     data['email'] = email;
-    data['push_token'] = pushToken;
+    data['pushToken'] = pushToken;
     data['password']=password;
     return data;
   }

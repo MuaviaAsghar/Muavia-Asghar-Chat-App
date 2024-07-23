@@ -14,33 +14,46 @@ class SettingScreenView extends StatefulWidget {
 class _SettingScreenViewState extends State<SettingScreenView> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Setting"),
-        centerTitle: true,
-      ),
-      body: Column(
-        children: [
-          ListTile(
-            title: const Text("Change Password"),
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => const ForgetPassView(),
+    return Container(
+      decoration: BoxDecoration(
+          gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: Provider.of<Themeprovider>(context).themeData == darkmode
+            ? [const Color(0xff2b5876), const Color(0xff4e4376)]
+            : [const Color(0xfffff1eb), const Color(0xfface0f9)],
+      )),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          title: const Text("Setting"),
+          centerTitle: true,
+        ),
+        body: Column(
+          children: [
+            ListTile(
+              title: const Text("Change Password"),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const ForgetPassView(),
+                ),
+              ),
+              trailing: const Icon(Icons.arrow_right),
+            ),
+            ListTile(
+              title: const Text("Change Theme"),
+              trailing: Switch(
+                value:
+                    Provider.of<Themeprovider>(context).themeData == darkmode,
+                onChanged: (value) {
+                  Provider.of<Themeprovider>(context, listen: false)
+                      .changeTheme();
+                },
               ),
             ),
-            trailing: const Icon(Icons.arrow_right),
-          ),
-          ListTile(
-            title: const Text("Change Theme"),
-            trailing: Switch(
-              value: Provider.of<Themeprovider>(context).themeData == darkmode,
-              onChanged: (value) {
-                Provider.of<Themeprovider>(context, listen: false)
-                    .changeTheme();
-              },
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

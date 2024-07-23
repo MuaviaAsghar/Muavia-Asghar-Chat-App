@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:say_anything_to_muavia/widgets/theme.dart';
 
 class Themeprovider extends ChangeNotifier {
@@ -12,8 +13,22 @@ class Themeprovider extends ChangeNotifier {
 
   void changeTheme() {
     if (_themeData == lightmode) {
+      const AppBarTheme(
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarIconBrightness: Brightness.dark,
+          statusBarBrightness: Brightness.dark,
+          statusBarColor: Colors.white,
+        ),
+      );
       themeData = darkmode;
     } else {
+      const AppBarTheme(
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarIconBrightness: Brightness.light,
+          statusBarBrightness: Brightness.light,
+          statusBarColor: Colors.black,
+        ),
+      );
       themeData = lightmode;
     }
   }

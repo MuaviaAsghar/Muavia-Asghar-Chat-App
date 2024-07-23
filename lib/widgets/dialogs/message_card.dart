@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:gallery_saver_updated/gallery_saver.dart';
 
 import '../../Models/message_model.dart';
@@ -20,8 +21,10 @@ class MessageCard extends StatefulWidget {
 }
 
 class _MessageCardState extends State<MessageCard> {
+    
   @override
   Widget build(BuildContext context) {
+   
 // Suggested code may be subject to a license. Learn more: ~LicenseLog:3573707440.
     bool isMe = authService.user?.uid == widget.message.fromId;
     return InkWell(
@@ -35,6 +38,8 @@ class _MessageCardState extends State<MessageCard> {
 
   // sender or another user message
   Widget _blueMessage() {
+     final customcCacheManager = CacheManager(Config('customcachekey',
+      stalePeriod: const Duration(days: 30), maxNrOfCacheObjects: 1000));
     //update last read message if sender and receiver are different
     if (widget.message.read.isEmpty) {
       authService.updateMessageReadStatus(widget.message);
@@ -72,6 +77,8 @@ class _MessageCardState extends State<MessageCard> {
                 ClipRRect(
                     borderRadius: BorderRadius.circular(15),
                     child: CachedNetworkImage(
+                      cacheManager: customcCacheManager,
+                    key: UniqueKey(),
                       imageUrl: widget.message.msg,
                       fit: BoxFit.cover,
                       placeholder: (context, url) => const Padding(
@@ -101,6 +108,8 @@ class _MessageCardState extends State<MessageCard> {
 
   // our or user message
   Widget _greenMessage() {
+     final customcCacheManager = CacheManager(Config('customcachekey',
+      stalePeriod: const Duration(days: 30), maxNrOfCacheObjects: 1000));
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -155,6 +164,8 @@ class _MessageCardState extends State<MessageCard> {
                 ClipRRect(
                     borderRadius: BorderRadius.circular(15),
                     child: CachedNetworkImage(
+                      cacheManager: customcCacheManager,
+                    key: UniqueKey(),
                       imageUrl: widget.message.msg,
                       placeholder: (context, url) => const Padding(
                         padding: EdgeInsets.all(8.0),

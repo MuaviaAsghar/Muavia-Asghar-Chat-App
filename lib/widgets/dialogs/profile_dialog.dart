@@ -1,19 +1,24 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 import '../../Models/json_model.dart';
 import '../../profile_screen/profile_screen.dart';
 
 class ProfileDialog extends StatelessWidget {
+  
   const ProfileDialog({super.key, required this.user});
 
   final ChatUser user;
   @override
   Widget build(BuildContext context) {
+    final customcCacheManager = CacheManager(Config('customcachekey',
+      stalePeriod: const Duration(days: 30), maxNrOfCacheObjects: 1000));
     final mq = MediaQuery.sizeOf(context);
 
     return AlertDialog(
+       
       contentPadding: EdgeInsets.zero,
       backgroundColor: Colors.white.withOpacity(.9),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -29,6 +34,8 @@ class ProfileDialog extends StatelessWidget {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(mq.height * .25),
                   child: CachedNetworkImage(
+                    cacheManager: customcCacheManager,
+                    key: UniqueKey(),
                     width: mq.width * .5,
                     height: mq.width * .5,
                     fit: BoxFit.cover,

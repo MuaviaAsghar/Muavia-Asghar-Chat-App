@@ -2,17 +2,23 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+// import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import 'package:say_anything_to_muavia/authentication/auth.dart';
+import 'package:say_anything_to_muavia/widgets/theme.dart';
 
 import '../Models/json_model.dart';
 import '../Models/message_model.dart';
 import '../my_date_util/my_date_util.dart';
 import '../profile_screen/view_profile_screen.dart';
 import '../widgets/dialogs/message_card.dart';
+import '../widgets/theme_provider.dart';
 
 class ChatScreenView extends StatefulWidget {
   final ChatUser user;
@@ -24,6 +30,9 @@ class ChatScreenView extends StatefulWidget {
 }
 
 class _ChatScreenViewState extends State<ChatScreenView> {
+  final customcCacheManager = CacheManager(Config('customcachekey',
+      stalePeriod: const Duration(days: 30), maxNrOfCacheObjects: 1000));
+
   // For storing all messages
   List<CMessage> _list = [];
 
@@ -32,45 +41,59 @@ class _ChatScreenViewState extends State<ChatScreenView> {
   final AuthService _authService = AuthService();
   // showEmoji -- for storing value of showing or hiding emoji
   // isUploading -- for checking if image is uploading or not?
-  bool _showEmoji = false, _isUploading = false;
+  bool _isUploading = false;
+  // bool _showEmoji = false;
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      // canPop: false,
-      // onPopInvoked: (didPop) {
-      //   if (_showEmoji) {
-      //     setState(() => _showEmoji = !_showEmoji);
-      //   } else {
-      //     Navigator.pop(context);
-      //   }
-      // },
+    return
 // PopScope(
-      canPop: false,
-      onPopInvoked: (didPop) async {
-        if (didPop) {
-          return;
-        }
-        final navigator = Navigator.of(context);
-        if (_showEmoji) {
-          setState(() => _showEmoji = !_showEmoji);
-        } else {
-          navigator.pop();
-        }
-      },
+//       // canPop: false,
+//       // onPopInvoked: (didPop) {
+//       //   if (_showEmoji) {
+//       //     setState(() => _showEmoji = !_showEmoji);
+//       //   } else {
+//       //     Navigator.pop(context);
+//       //   }
+//       // },
+// // PopScope(
+//       canPop: false,
+//       onPopInvoked: (didPop) async {
+//         if (didPop) {
+//           return;
+//         }
+//         final navigator = Navigator.of(context);
+//         if (_showEmoji) {
+//           setState(() => _showEmoji = !_showEmoji);
+//         } else {
+//           navigator.pop();
+//         }
+//       },
 
-      // onWillPop: () async {
-      //   if (_showEmoji) {
-      //     setState(() => _showEmoji = !_showEmoji);
-      //     return false;
-      //   } else {
-      //     return true;
-      //   }
-      // },
-      child: GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(),
+//       // onWillPop: () async {
+//       //   if (_showEmoji) {
+//       //     setState(() => _showEmoji = !_showEmoji);
+//       //     return false;
+//       //   } else {
+//       //     return true;
+//       //   }
+//       // },
+//       child:
+        GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Container(
+        decoration: BoxDecoration(
+            gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: Provider.of<Themeprovider>(context).themeData == darkmode
+              ? [const Color(0xff2b5876), const Color(0xff4e4376)]
+              : [const Color(0xfffff1eb), const Color(0xfface0f9)],
+        )),
         child: Scaffold(
+          backgroundColor: Colors.transparent,
           appBar: AppBar(
+            backgroundColor: Colors.transparent,
             automaticallyImplyLeading: false,
             flexibleSpace: _appBar(),
           ),
@@ -125,19 +148,19 @@ class _ChatScreenViewState extends State<ChatScreenView> {
                     ),
                   ),
                 _chatInput(),
-                if (_showEmoji)
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height * .35,
-                    child: EmojiPicker(
-                      textEditingController: _textController,
-                      config: const Config(),
-                    ),
-                  ),
+                // if (_showEmoji)
+                //   SizedBox(
+                //     height: MediaQuery.of(context).size.height * .35,
+                //     child: EmojiPicker(
+                //       textEditingController: _textController,
+                //     ),
+                //   ),
               ],
             ),
           ),
         ),
       ),
+      // ),
     );
   }
 
@@ -169,11 +192,14 @@ class _ChatScreenViewState extends State<ChatScreenView> {
                   borderRadius: BorderRadius.circular(
                       MediaQuery.of(context).size.height * .03),
                   child: CachedNetworkImage(
+                    cacheManager: customcCacheManager,
+                    key: UniqueKey(),
                     width: MediaQuery.of(context).size.height * .05,
                     height: MediaQuery.of(context).size.height * .05,
                     fit: BoxFit.cover,
                     imageUrl:
-                        list.isNotEmpty ? list[0].image : widget.user.image,
+                        // list.isNotEmpty ? list[0].image :
+                        widget.user.image,
                     errorWidget: (context, url, error) => const CircleAvatar(
                       child: Icon(CupertinoIcons.person),
                     ),
@@ -185,7 +211,8 @@ class _ChatScreenViewState extends State<ChatScreenView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      list.isNotEmpty ? list[0].name : widget.user.name,
+                      // list.isNotEmpty ? list[0].name :
+                      widget.user.name,
                       style: const TextStyle(
                           fontSize: 16, fontWeight: FontWeight.w500),
                     ),
@@ -229,31 +256,35 @@ class _ChatScreenViewState extends State<ChatScreenView> {
               ),
               child: Row(
                 children: [
-                  IconButton(
-                    onPressed: () {
-                      FocusScope.of(context).unfocus();
-                      setState(() => _showEmoji = !_showEmoji);
-                    },
-                    icon: const Icon(Icons.emoji_emotions,
-                        color: Colors.blueAccent, size: 25),
-                  ),
+                  // IconButton(
+                  // onPressed: () {
+                  //   FocusScope.of(context).unfocus();
+                  // setState(() => _showEmoji = !_showEmoji);
+                  // },
+                  //   icon: const Icon(Icons.emoji_emotions,
+                  //       color: Colors.blueAccent, size: 25),
+                  // ),
                   Expanded(
-                    child: TextField(
-                      controller: _textController,
-                      keyboardType: TextInputType.multiline,
-                      maxLines: null,
-                      onTap: () {
-                        if (_showEmoji) {
-                          setState(() => _showEmoji = !_showEmoji);
-                        }
-                      },
-                      decoration: const InputDecoration(
-                        hintText: 'Type Something...',
-                        hintStyle: TextStyle(color: Colors.blueAccent),
-                        border: InputBorder.none,
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                        left: 10,
+                      ),
+                      child: TextField(
+                        controller: _textController,
+                        keyboardType: TextInputType.multiline,
+                        maxLines: null,
+                        decoration: const InputDecoration(
+                          hintText: 'Type Something...',
+                          hintStyle: TextStyle(
+                              color: Colors.blueAccent,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700),
+                          border: InputBorder.none,
+                        ),
                       ),
                     ),
                   ),
+                  // SizedBox(width: MediaQuery.of(context).size.width * .2),
                   IconButton(
                     onPressed: () async {
                       final ImagePicker picker = ImagePicker();
@@ -286,7 +317,7 @@ class _ChatScreenViewState extends State<ChatScreenView> {
                     icon: const Icon(Icons.camera_alt_rounded,
                         color: Colors.blueAccent, size: 26),
                   ),
-                  SizedBox(width: MediaQuery.of(context).size.width * .02),
+                  SizedBox(width: MediaQuery.of(context).size.width * .003),
                 ],
               ),
             ),

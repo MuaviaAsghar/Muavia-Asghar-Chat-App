@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 import '../Models/json_model.dart';
 import '../chat_screen/chat_screen_view.dart';
@@ -19,6 +20,8 @@ class ChatScreenCard extends StatefulWidget {
 }
 
 class _ChatScreenCardState extends State<ChatScreenCard> {
+  final customcCacheManager = CacheManager(Config('customcachekey',
+      stalePeriod: const Duration(days: 30), maxNrOfCacheObjects: 1000));
   String formatTimestamp(Timestamp timestamp) {
     final DateTime dateTime = timestamp.toDate();
     return "${dateTime.year}-${dateTime.month}-${dateTime.day} ${dateTime.hour}:${dateTime.minute}:${dateTime.second}";
@@ -46,6 +49,8 @@ class _ChatScreenCardState extends State<ChatScreenCard> {
             borderRadius:
                 BorderRadius.circular(MediaQuery.sizeOf(context).height * .03),
             child: CachedNetworkImage(
+              cacheManager: customcCacheManager,
+                    key: UniqueKey(),
               width: MediaQuery.sizeOf(context).height * .055,
               height: MediaQuery.sizeOf(context).height * .055,
               imageUrl: user.image,

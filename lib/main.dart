@@ -17,7 +17,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'firebase_options.dart';
 
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SystemChrome.setPreferredOrientations(
@@ -51,7 +50,6 @@ void main() async {
     }
   }
 
-  
   runApp(ChangeNotifierProvider(
     create: (context) => Themeprovider(),
     child: MyApp(
@@ -68,7 +66,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: true,
+      debugShowCheckedModeBanner: false,
       title: 'Adaptive Theme Demo',
       theme: Provider.of<Themeprovider>(context).themeData,
       home: initialScreen,

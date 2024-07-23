@@ -2,8 +2,10 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -22,6 +24,8 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  final customcCacheManager = CacheManager(Config('customcachekey',
+      stalePeriod: const Duration(days: 30), maxNrOfCacheObjects: 1000));
   final _formKey = GlobalKey<FormState>();
   String? _image;
   late HomeScreenModel model;
@@ -87,6 +91,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         child: model.image != null && model.image!.isNotEmpty
                             ? CachedNetworkImage(
+                                cacheManager: customcCacheManager,
+                    key: UniqueKey(),
                                 width: MediaQuery.sizeOf(context).height * .2,
                                 height: MediaQuery.sizeOf(context).height * .2,
                                 fit: BoxFit.cover,

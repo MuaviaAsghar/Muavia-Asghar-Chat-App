@@ -1,7 +1,10 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:provider/provider.dart';
 import 'package:say_anything_to_muavia/widgets/text_fields.dart';
+import 'package:say_anything_to_muavia/widgets/theme.dart';
+import 'package:say_anything_to_muavia/widgets/theme_provider.dart';
 
 import 'change_password_outside_app_model.dart';
 
@@ -50,84 +53,93 @@ class _ChangePasswordOutsideAppState extends State<ChangePasswordOutsideAppView>
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Scaffold(
-        key: model.scaffoldMessengerKey,
-        appBar: AppBar(
-          title: const Text(
-            "ChatApp",
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      child:  Container( decoration: BoxDecoration(
+              gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: Provider.of<Themeprovider>(context).themeData == darkmode
+                ? [const Color(0xff2b5876), const Color(0xff4e4376)]
+                : [const Color(0xfffff1eb), const Color(0xfface0f9)],
+          )),
+        child: Scaffold(backgroundColor: Colors.transparent,
+          key: model.scaffoldMessengerKey,
+          appBar: AppBar(
+            title: const Text(
+              "ChatApp",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            centerTitle: true,
+            toolbarHeight: 110,
           ),
-          centerTitle: true,
-          toolbarHeight: 110,
-        ),
-        body: Stack(
-          children: [
-            Align(
-              alignment: Alignment.center,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CustomTextField(
-                        type: 'email',
-                        hint: "Enter Your Email",
-                        label: 'Email',
-                        controller: model.email,
-                        focusNode: model.emailFocus,
-                      ),
-                      const Gap(10),
-                      GestureDetector(
-                        onTap: model.isCooldownActive
-                            ? null
-                            : () async {
-                                await model.sendMail(context);
-                              },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: Colors.grey, width: 1),
-                            color: model.isCooldownActive
-                                ? const Color.fromARGB(255, 177, 14, 14)
-                                : const Color.fromARGB(255, 255, 255, 255),
-                          ),
-                          child: const Center(
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(
-                                  vertical: 15, horizontal: 10),
-                              child: Text("Send Mail"),
+          body: Stack(
+            children: [
+              Align(
+                alignment: Alignment.center,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CustomTextField(
+                          type: 'email',
+                          hint: "Enter Your Email",
+                          label: 'Email',
+                          controller: model.email,
+                          focusNode: model.emailFocus,
+                        ),
+                        const Gap(10),
+                        GestureDetector(
+                          onTap: model.isCooldownActive
+                              ? null
+                              : () async {
+                                  await model.sendMail(context);
+                                },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: Colors.grey, width: 1),
+                              color: model.isCooldownActive
+                                  ? const Color.fromARGB(255, 177, 14, 14)
+                                  : const Color.fromARGB(255, 255, 255, 255),
+                            ),
+                            child: const Center(
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(
+                                    vertical: 15, horizontal: 10),
+                                child: Text("Send Mail"),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      const Gap(10),
-                    ],
+                        const Gap(10),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-            if (!model.isKeyboardVisible)
-              Positioned(
-                top: MediaQuery.of(context).size.height * 7 / 100,
-                left: 20,
-                right: 20,
-                child: AnimatedTextKit(
-                  repeatForever: true,
-                  animatedTexts: [
-                    TyperAnimatedText(
-                      "You're on a Forget Password Page!",
-                      speed: const Duration(milliseconds: 200),
-                      curve: Curves.easeInOutBack,
-                      textStyle: const TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.bold,
+              if (!model.isKeyboardVisible)
+                Positioned(
+                  top: MediaQuery.of(context).size.height * 7 / 100,
+                  left: 20,
+                  right: 20,
+                  child: AnimatedTextKit(
+                    repeatForever: true,
+                    animatedTexts: [
+                      TyperAnimatedText(
+                        "You're on a Forget Password Page!",
+                        speed: const Duration(milliseconds: 200),
+                        curve: Curves.easeInOutBack,
+                        textStyle: const TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );
