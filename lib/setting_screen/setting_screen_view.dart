@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:say_anything_to_muavia/ForgetPass/forget_pass_view.dart';
 import 'package:say_anything_to_muavia/widgets/theme.dart';
-import 'package:say_anything_to_muavia/widgets/themeProvider.dart';
+import 'package:say_anything_to_muavia/widgets/theme_provider.dart';
 
 class SettingScreenView extends StatefulWidget {
   const SettingScreenView({super.key});
@@ -31,7 +31,7 @@ class _SettingScreenViewState extends State<SettingScreenView> {
             trailing: const Icon(Icons.arrow_right),
           ),
           ListTile(
-            title: Text("Change Theme"),
+            title: const Text("Change Theme"),
             trailing: Switch(
               value: Provider.of<Themeprovider>(context).themeData == darkmode,
               onChanged: (value) {

@@ -35,6 +35,54 @@ class _HomeScreenViewState extends State<HomeScreenView> {
     _loadChatUsers();
   }
 
+  void _showUserDialog(BuildContext context) {
+    showDialog<String>(
+      context: context,
+      builder: (BuildContext context) => Dialog(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              const Text('Select a user to chat with:'),
+              const SizedBox(height: 15),
+              ListView.builder(
+                shrinkWrap: true,
+                itemCount: _allUsers.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    title: Text(_allUsers[index].name),
+                    subtitle: Text(_allUsers[index].email),
+                    onTap: () async {
+                      await model.addChatUser(_allUsers[index]);
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute<void>(
+                            builder: (BuildContext context) =>
+                                ChatScreenView(user: _allUsers[index]),
+                          ),
+                        );
+                      }
+                    },
+                  );
+                },
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('Close'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _loadChatUsers() async {
     List<String> chatUserIds = await model.fetchChatUsers();
     setState(() {
@@ -101,49 +149,9 @@ class _HomeScreenViewState extends State<HomeScreenView> {
           floatingActionButton: FloatingActionButton(
             onPressed: () async {
               await _loadAllUsers();
-              showDialog<String>(
-                context: context,
-                builder: (BuildContext context) => Dialog(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        const Text('Select a user to chat with:'),
-                        const SizedBox(height: 15),
-                        ListView.builder(
-                          shrinkWrap: true,
-                          itemCount: _allUsers.length,
-                          itemBuilder: (context, index) {
-                            return ListTile(
-                              title: Text(_allUsers[index].name),
-                              subtitle: Text(_allUsers[index].email),
-                              onTap: () async {
-                                await model.addChatUser(_allUsers[index]);
-                                if(context.mounted){
-                                Navigator.pop(context);
-                             Navigator.push(
-                                    context,
-                                    MaterialPageRoute<void>(
-                                        builder: (BuildContext context) =>
-                                            ChatScreenView(
-                                                user: _allUsers[index])));}   
-                              },
-                            );
-                          },
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          child: const Text('Close'),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
+              if (context.mounted) {
+                _showUserDialog(context);
+              }
             },
             child: const Icon(Icons.add),
           ),
@@ -325,3 +333,52 @@ class _HomeScreenViewState extends State<HomeScreenView> {
     );
   }
 }
+
+
+
+
+//   showDialog<String>(
+// // Suggested code may be subject to a license. Learn more: ~LicenseLog:74299352.
+//                 context: context,
+//                 builder: (BuildContext context) => Dialog(
+//                   child: Padding(
+//                     padding: const EdgeInsets.all(8.0),
+//                     child: Column(
+//                       mainAxisSize: MainAxisSize.min,
+//                       mainAxisAlignment: MainAxisAlignment.center,
+//                       children: <Widget>[
+//                         const Text('Select a user to chat with:'),
+//                         const SizedBox(height: 15),
+//                         ListView.builder(
+//                           shrinkWrap: true,
+//                           itemCount: _allUsers.length,
+//                           itemBuilder: (context, index) {
+//                             return ListTile(
+//                               title: Text(_allUsers[index].name),
+//                               subtitle: Text(_allUsers[index].email),
+//                               onTap: () async {
+//                                 await model.addChatUser(_allUsers[index]);
+//                                 if (context.mounted) {
+//                                   Navigator.pop(context);
+//                                   Navigator.push(
+//                                       context,
+//                                       MaterialPageRoute<void>(
+//                                           builder: (BuildContext context) =>
+//                                               ChatScreenView(
+//                                                   user: _allUsers[index])));
+//                                 }
+//                               },
+//                             );
+//                           },
+//                         ),
+//                         TextButton(
+//                           onPressed: () {
+//                             Navigator.pop(context);
+//                           },
+//                           child: const Text('Close'),
+//                         ),
+//                       ],
+//                     ),
+//                   ),
+//                 ),
+//               );

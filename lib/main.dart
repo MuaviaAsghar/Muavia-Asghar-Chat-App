@@ -11,7 +11,7 @@ import 'package:provider/provider.dart';
 import 'package:say_anything_to_muavia/Home/home_screen_view.dart';
 import 'package:say_anything_to_muavia/Login/login_screen_view.dart';
 
-import 'package:say_anything_to_muavia/widgets/themeProvider.dart';
+import 'package:say_anything_to_muavia/widgets/theme_provider.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -51,6 +51,7 @@ void main() async {
     }
   }
 
+  
   runApp(ChangeNotifierProvider(
     create: (context) => Themeprovider(),
     child: MyApp(
