@@ -20,37 +20,63 @@ class ChatScreenCard extends StatefulWidget {
 }
 
 class _ChatScreenCardState extends State<ChatScreenCard> {
-  final customcCacheManager = CacheManager(Config('customcachekey',
+  final customCacheManager = CacheManager(Config('customcachekey',
       stalePeriod: const Duration(days: 30), maxNrOfCacheObjects: 1000));
+
+  final List<ChatUser> _selectedItems = [];
+
   String formatTimestamp(Timestamp timestamp) {
     final DateTime dateTime = timestamp.toDate();
     return "${dateTime.year}-${dateTime.month}-${dateTime.day} ${dateTime.hour}:${dateTime.minute}:${dateTime.second}";
   }
 
+  void _handleLongPress() {
+    setState(() {
+      if (_selectedItems.contains(widget.myuser)) {
+        _selectedItems.remove(widget.myuser);
+      } else {
+        _selectedItems.add(widget.myuser);
+      }
+    });
+  }
+
+  void _handleTap() {
+    if (_selectedItems.contains(widget.myuser)) {
+      setState(() {
+        _selectedItems.remove(widget.myuser);
+      });
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute<void>(
+          builder: (BuildContext context) => ChatScreenView(
+            user: widget.myuser,
+          ),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     var user = widget.myuser;
+    bool isSelected = _selectedItems.contains(user);
 
     return Card(
       margin: EdgeInsets.symmetric(
           horizontal: MediaQuery.of(context).size.width * .04, vertical: 4),
       elevation: 1,
+      color: (isSelected) ? Colors.blue.withOpacity(0.5) : Colors.transparent,
       child: InkWell(
-        onTap: () async {
-          Navigator.push(
-              context,
-              MaterialPageRoute<void>(
-                  builder: (BuildContext context) => ChatScreenView(
-                        user: widget.myuser,
-                      )));
-        },
+        onLongPress: _handleLongPress,
+        onTap: _handleTap,
         child: ListTile(
           leading: ClipRRect(
             borderRadius:
                 BorderRadius.circular(MediaQuery.sizeOf(context).height * .03),
             child: CachedNetworkImage(
-              cacheManager: customcCacheManager,
-                    key: UniqueKey(),
+              cacheManager: customCacheManager,
+              key: UniqueKey(),
               width: MediaQuery.sizeOf(context).height * .055,
               height: MediaQuery.sizeOf(context).height * .055,
               imageUrl: user.image,
