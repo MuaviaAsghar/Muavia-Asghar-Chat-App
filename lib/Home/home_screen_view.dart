@@ -1,14 +1,10 @@
-import 'dart:async';
 import 'dart:developer';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:provider/provider.dart';
 import 'package:say_anything_to_muavia/widgets/theme.dart';
-
 import '../Login/login_screen_view.dart';
 import '../Models/json_model.dart';
 import '../chat_screen/chat_screen_view.dart';
@@ -26,24 +22,7 @@ class HomeScreenView extends StatefulWidget {
 }
 
 class _HomeScreenViewState extends State<HomeScreenView> {
-  final customcCacheManager = CacheManager(Config('customcachekey',
-      stalePeriod: const Duration(days: 30), maxNrOfCacheObjects: 100));
-
-  late final List<ChatUser> _list = [];
   late HomeScreenModel model;
-  final List<ChatUser> _searchlist = [];
-  bool _isSearching = false;
-  List<ChatUser> _allUsers = [];
-  List<String> _chatUserIds = [];
-  void navigatetouser(index) {
-    Navigator.push(
-      context,
-      MaterialPageRoute<void>(
-        builder: (BuildContext context) =>
-            ChatScreenView(user: _allUsers[index]),
-      ),
-    );
-  }
 
   @override
   void initState() {
@@ -67,18 +46,22 @@ class _HomeScreenViewState extends State<HomeScreenView> {
               const SizedBox(height: 15),
               ListView.builder(
                 shrinkWrap: true,
-                itemCount: _allUsers.length,
+                itemCount: model.allUsers.length,
                 itemBuilder: (context, index) {
                   return ListTile(
-                    title: Text(_allUsers[index].name),
-                    subtitle: Text(_allUsers[index].email),
-                    onLongPress: () {},
+                    title: Text(model.allUsers[index].name),
+                    subtitle: Text(model.allUsers[index].email),
                     onTap: () async {
-                      await model.addChatUser(_allUsers[index]);
+                      await model.addChatUser(model.allUsers[index]);
                       if (context.mounted) {
                         Navigator.pop(context);
-
-                        navigatetouser(index);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute<void>(
+                            builder: (BuildContext context) =>
+                                ChatScreenView(user: model.allUsers[index]),
+                          ),
+                        );
                       }
                     },
                   );
@@ -100,14 +83,14 @@ class _HomeScreenViewState extends State<HomeScreenView> {
   Future<void> _loadChatUsers() async {
     List<String> chatUserIds = await model.fetchChatUsers();
     setState(() {
-      _chatUserIds = chatUserIds;
+      model.chatUserIds = chatUserIds;
     });
   }
 
   Future<void> _loadAllUsers() async {
     List<ChatUser> allUsers = await model.fetchAllUsers();
     setState(() {
-      _allUsers = allUsers;
+      model.allUsers = allUsers;
     });
   }
 
@@ -116,10 +99,10 @@ class _HomeScreenViewState extends State<HomeScreenView> {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: PopScope(
-        canPop: !_isSearching,
+        canPop: !model.isSearching,
         onPopInvoked: (_) async {
-          if (_isSearching) {
-            setState(() => _isSearching = !_isSearching);
+          if (model.isSearching) {
+            setState(() => model.isSearching = !model.isSearching);
           } else {
             Navigator.of(context).pop();
           }
@@ -136,48 +119,72 @@ class _HomeScreenViewState extends State<HomeScreenView> {
             )),
             child: Scaffold(
               backgroundColor: Colors.transparent,
-              appBar: AppBar(
-                backgroundColor: Colors.transparent,
-                actions: [
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _isSearching = !_isSearching;
-                      });
-                    },
-                    icon: Icon(_isSearching
-                        ? CupertinoIcons.clear_circled_solid
-                        : Icons.search),
-                  )
-                ],
-                title: _isSearching
-                    ? TextField(
-                        decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            hintText: 'Name, Email, ...'),
-                        autofocus: true,
-                        style:
-                            const TextStyle(fontSize: 16, letterSpacing: 0.5),
-                        onChanged: (val) {
-                          _searchlist.clear();
-                          for (var i in _list) {
-                            if (i.name
-                                    .toLowerCase()
-                                    .contains(val.toLowerCase()) ||
-                                i.email
-                                    .toLowerCase()
-                                    .contains(val.toLowerCase())) {
-                              _searchlist.add(i);
-                            }
+              appBar: model.isSelectingTile
+                  ? AppBar(
+                      backgroundColor: Colors.transparent,
+                      actions: [
+                        IconButton(
+                          onPressed: () {
                             setState(() {
-                              _searchlist;
+                              model.selectedItems.clear();
+                              model.isSelectingTile = false;
                             });
-                          }
+                          },
+                          icon: const Icon(Icons.delete),
+                        ),
+                      ],
+                      leading: IconButton(
+                        onPressed: () {
+                          setState(() {
+                            model.selectedItems.clear();
+                            model.isSelectingTile = false;
+                          });
                         },
-                      )
-                    : const Text("ChatApp"),
-                centerTitle: true,
-              ),
+                        icon: const Icon(CupertinoIcons.clear_circled_solid),
+                      ),
+                    )
+                  : AppBar(
+                      backgroundColor: Colors.transparent,
+                      actions: [
+                        IconButton(
+                          onPressed: () {
+                            setState(() {
+                              model.isSearching = !model.isSearching;
+                            });
+                          },
+                          icon: Icon(model.isSearching
+                              ? CupertinoIcons.clear_circled_solid
+                              : Icons.search),
+                        )
+                      ],
+                      title: model.isSearching
+                          ? TextField(
+                              decoration: const InputDecoration(
+                                  border: InputBorder.none,
+                                  hintText: 'Name, Email, ...'),
+                              autofocus: true,
+                              style: const TextStyle(
+                                  fontSize: 16, letterSpacing: 0.5),
+                              onChanged: (val) {
+                                model.searchlist.clear();
+                                for (var i in model.list) {
+                                  if (i.name
+                                          .toLowerCase()
+                                          .contains(val.toLowerCase()) ||
+                                      i.email
+                                          .toLowerCase()
+                                          .contains(val.toLowerCase())) {
+                                    model.searchlist.add(i);
+                                  }
+                                  setState(() {
+                                    model.searchlist;
+                                  });
+                                }
+                              },
+                            )
+                          : const Text("ChatApp"),
+                      centerTitle: true,
+                    ),
               floatingActionButton: FloatingActionButton(
                 onPressed: () async {
                   await _loadAllUsers();
@@ -204,14 +211,14 @@ class _HomeScreenViewState extends State<HomeScreenView> {
                   }
 
                   final data = snapshot.data!.docs;
-                  _list.clear();
+                  model.list.clear();
                   for (var doc in data) {
                     try {
                       log('Document data: ${doc.data()}');
                       var chatUserModel = ChatUser.fromJson(doc.data());
-                      if (_chatUserIds.contains(chatUserModel.id) ||
+                      if (model.chatUserIds.contains(chatUserModel.id) ||
                           chatUserModel.id == 'chatbot') {
-                        _list.add(chatUserModel);
+                        model.list.add(chatUserModel);
                       }
                     } catch (e) {
                       log("Error parsing document ${doc.id}: ${e.toString()}");
@@ -219,13 +226,13 @@ class _HomeScreenViewState extends State<HomeScreenView> {
                   }
 
                   // Ensure the Chatbot user is always at the top
-                  _list.sort((a, b) {
+                  model.list.sort((a, b) {
                     if (a.id == 'chatbot') return -1;
                     if (b.id == 'chatbot') return 1;
                     return 0;
                   });
 
-                  if (_list.isEmpty) {
+                  if (model.list.isEmpty) {
                     return const Center(child: Text("No data found"));
                   } else {
                     return ListView.builder(
@@ -234,13 +241,23 @@ class _HomeScreenViewState extends State<HomeScreenView> {
                       padding: EdgeInsets.only(
                         top: MediaQuery.of(context).size.height * .01,
                       ),
-                      itemCount:
-                          _isSearching ? _searchlist.length : _list.length,
+                      itemCount: model.isSearching
+                          ? model.searchlist.length
+                          : model.list.length,
                       itemBuilder: (context, index) {
-                        return ChatScreenCard(
-                            myuser: _isSearching
-                                ? _searchlist[index]
-                                : _list[index]);
+                        return GestureDetector(
+                          onLongPress: () => setState(() {
+                            
+                          }),
+                          onTap: ()=>setState(() {
+                            
+                          }),
+                          child: ChatScreenCard(
+                              model: model,
+                              myuser: model.isSearching
+                                  ? model.searchlist[index]
+                                  : model.list[index]),
+                        );
                       },
                     );
                   }
@@ -283,7 +300,7 @@ class _HomeScreenViewState extends State<HomeScreenView> {
                               child: model.image != null &&
                                       model.image!.isNotEmpty
                                   ? CachedNetworkImage(
-                                      cacheManager: customcCacheManager,
+                                      cacheManager: model.customcCacheManager,
                                       key: UniqueKey(),
                                       width:
                                           MediaQuery.sizeOf(context).width * 2,
@@ -377,3 +394,52 @@ class _HomeScreenViewState extends State<HomeScreenView> {
     );
   }
 }
+
+
+
+
+//   showDialog<String>(
+// // Suggested code may be subject to a license. Learn more: ~LicenseLog:74299352.
+//                 context: context,
+//                 builder: (BuildContext context) => Dialog(
+//                   child: Padding(
+//                     padding: const EdgeInsets.all(8.0),
+//                     child: Column(
+//                       mainAxisSize: MainAxisSize.min,
+//                       mainAxisAlignment: MainAxisAlignment.center,
+//                       children: <Widget>[
+//                         const Text('Select a user to chat with:'),
+//                         const SizedBox(height: 15),
+//                         ListView.builder(
+//                           shrinkWrap: true,
+//                           itemCount: _allUsers.length,
+//                           itemBuilder: (context, index) {
+//                             return ListTile(
+//                               title: Text(_allUsers[index].name),
+//                               subtitle: Text(_allUsers[index].email),
+//                               onTap: () async {
+//                                 await model.addChatUser(_allUsers[index]);
+//                                 if (context.mounted) {
+//                                   Navigator.pop(context);
+//                                   Navigator.push(
+//                                       context,
+//                                       MaterialPageRoute<void>(
+//                                           builder: (BuildContext context) =>
+//                                               ChatScreenView(
+//                                                   user: _allUsers[index])));
+//                                 }
+//                               },
+//                             );
+//                           },
+//                         ),
+//                         TextButton(
+//                           onPressed: () {
+//                             Navigator.pop(context);
+//                           },
+//                           child: const Text('Close'),
+//                         ),
+//                       ],
+//                     ),
+//                   ),
+//                 ),
+//               );
