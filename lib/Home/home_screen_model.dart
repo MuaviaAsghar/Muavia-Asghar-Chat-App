@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:say_anything_to_muavia/Models/json_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -22,7 +23,17 @@ class HomeScreenModel {
   HomeScreenModel() {
     userId = _firebaseauth.currentUser?.uid;
   }
+  final customcCacheManager = CacheManager(Config('customcachekey',
+      stalePeriod: const Duration(days: 30), maxNrOfCacheObjects: 100));
 
+  late final List<ChatUser> list = [];
+
+  final List<ChatUser> searchlist = [];
+  bool isSearching = false;
+  List<ChatUser> allUsers = [];
+  List<String> chatUserIds = [];
+  List<ChatUser> selectedItems = [];
+  bool isSelectingTile = false;
   Future<void> fetchUserData() async {
     if (userId != null) {
       try {
@@ -51,7 +62,9 @@ class HomeScreenModel {
           await _firestore.collection('usersData').get();
       List<ChatUser> users = snapshot.docs
           .map((doc) => ChatUser.fromJson(doc.data()))
-          .where((user) => user.id != userId && user.id != 'chatbot') // Filter out current user and chatbot
+          .where((user) =>
+              user.id != userId &&
+              user.id != 'chatbot') // Filter out current user and chatbot
           .toList();
       return users;
     } catch (e) {
@@ -65,7 +78,7 @@ class HomeScreenModel {
       await _firestore.collection('chatUsers').doc(userId).set({
         'chatUsers': FieldValue.arrayUnion([user.id])
       }, SetOptions(merge: true));
- 
+
       log('Added user to chat list: ${user.name}');
     } catch (e) {
       log('Error adding user to chat list: $e');
@@ -74,10 +87,8 @@ class HomeScreenModel {
 
   Future<List<String>> fetchChatUsers() async {
     try {
-      DocumentSnapshot<Map<String, dynamic>> doc = await _firestore
-          .collection('chatUsers')
-          .doc(userId)
-          .get();
+      DocumentSnapshot<Map<String, dynamic>> doc =
+          await _firestore.collection('chatUsers').doc(userId).get();
       List<String> chatUsers = doc.data()?['chatUsers']?.cast<String>() ?? [];
       return chatUsers;
     } catch (e) {
