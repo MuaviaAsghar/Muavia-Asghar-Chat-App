@@ -15,8 +15,8 @@ class Themeprovider extends ChangeNotifier {
     if (_themeData == lightmode) {
       const AppBarTheme(
         systemOverlayStyle: SystemUiOverlayStyle(
-          statusBarIconBrightness: Brightness.dark,
-          statusBarBrightness: Brightness.dark,
+          statusBarIconBrightness: Brightness.light,
+          statusBarBrightness: Brightness.light,
           statusBarColor: Colors.white,
         ),
       );
@@ -24,8 +24,8 @@ class Themeprovider extends ChangeNotifier {
     } else {
       const AppBarTheme(
         systemOverlayStyle: SystemUiOverlayStyle(
-          statusBarIconBrightness: Brightness.light,
-          statusBarBrightness: Brightness.light,
+          statusBarIconBrightness: Brightness.dark,
+          statusBarBrightness: Brightness.dark,
           statusBarColor: Colors.black,
         ),
       );

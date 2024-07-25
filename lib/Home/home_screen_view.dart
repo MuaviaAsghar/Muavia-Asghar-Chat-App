@@ -246,12 +246,8 @@ class _HomeScreenViewState extends State<HomeScreenView> {
                           : model.list.length,
                       itemBuilder: (context, index) {
                         return GestureDetector(
-                          onLongPress: () => setState(() {
-                            
-                          }),
-                          onTap: ()=>setState(() {
-                            
-                          }),
+                          onLongPress: () => setState(() {}),
+                          onTap: () => setState(() {}),
                           child: ChatScreenCard(
                               model: model,
                               myuser: model.isSearching
