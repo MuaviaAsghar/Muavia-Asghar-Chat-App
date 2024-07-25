@@ -3,10 +3,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:provider/provider.dart';
 import 'package:say_anything_to_muavia/widgets/theme.dart';
-
 import '../Login/login_screen_view.dart';
 import '../Models/json_model.dart';
 import '../chat_screen/chat_screen_view.dart';

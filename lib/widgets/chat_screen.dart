@@ -1,5 +1,10 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+
+import '../Home/home_screen_model.dart';
 import '../Models/json_model.dart';
-import '../home_screen/home_screen_model.dart';
+import '../chat_screen/chat_screen_view.dart';
+
 
 class ChatScreenCard extends StatelessWidget {
   final HomeScreenModel model;
