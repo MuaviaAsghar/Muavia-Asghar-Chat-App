@@ -10,11 +10,17 @@ import 'package:say_anything_to_muavia/Home/home_screen_model.dart';
 import '../Models/json_model.dart';
 import '../chat_screen/chat_screen_view.dart';
 
+
 class ChatScreenCard extends StatefulWidget {
   final ChatUser myuser;
   final HomeScreenModel model;
+ 
 
-  const ChatScreenCard({super.key, required this.myuser, required this.model});
+  const ChatScreenCard(
+      {super.key,
+      required this.myuser,
+      required this.model,
+     });
 
   @override
   State<ChatScreenCard> createState() => _ChatScreenCardState();
@@ -23,11 +29,6 @@ class ChatScreenCard extends StatefulWidget {
 class _ChatScreenCardState extends State<ChatScreenCard> {
   final customCacheManager = CacheManager(Config('customcachekey',
       stalePeriod: const Duration(days: 30), maxNrOfCacheObjects: 1000));
-
-  String formatTimestamp(Timestamp timestamp) {
-    final DateTime dateTime = timestamp.toDate();
-    return "${dateTime.year}-${dateTime.month}-${dateTime.day} ${dateTime.hour}:${dateTime.minute}:${dateTime.second}";
-  }
 
   void handleSelection(ChatUser user) {
     setState(() {
@@ -42,34 +43,42 @@ class _ChatScreenCardState extends State<ChatScreenCard> {
       }
     });
   }
+  String formatTimestamp(Timestamp timestamp) {
+    final DateTime dateTime = timestamp.toDate();
+    return "${dateTime.year}-${dateTime.month}-${dateTime.day} ${dateTime.hour}:${dateTime.minute}:${dateTime.second}";
+  }
+
+  
 
   @override
   Widget build(BuildContext context) {
     var user = widget.myuser;
 
-    return Card(
-      margin: EdgeInsets.symmetric(
-          horizontal: MediaQuery.of(context).size.width * .04, vertical: 4),
-      elevation: 1,
-      child: InkWell(
-        onLongPress: () {
-          log("longpress calling ");
-          handleSelection(user);
-        },
-        onTap: () {
-          if (widget.model.isSelectingTile) {
-            log("selection mode: tap calling");
-            handleSelection(user);
-          } else {
-            log("normal mode: tap calling");
-            Navigator.push(
-                context,
-                MaterialPageRoute<void>(
-                    builder: (BuildContext context) => ChatScreenView(
-                          user: user,
-                        )));
-          }
-        },
+    return InkWell(
+         onLongPress: () {
+                            log("longpress calling ");
+                            handleSelection(user);
+                          },
+                     
+                          onTap: () {
+                            if (widget.model.isSelectingTile) {
+                              log("selection mode: tap calling");
+                              handleSelection(user);
+                            } else {
+                              log("normal mode: tap calling");
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute<void>(
+                                      builder: (BuildContext context) =>
+                                          ChatScreenView(
+                                            user: user,
+                                          )));
+                            }
+                          },
+      child: Card(
+        margin: EdgeInsets.symmetric(
+            horizontal: MediaQuery.of(context).size.width * .04, vertical: 4),
+        elevation: 1,
         child: Container(
           color: (widget.model.selectedItems.contains(user))
               ? Colors.blue.withOpacity(0.5)

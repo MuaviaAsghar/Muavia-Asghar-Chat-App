@@ -245,15 +245,11 @@ class _HomeScreenViewState extends State<HomeScreenView> {
                           ? model.searchlist.length
                           : model.list.length,
                       itemBuilder: (context, index) {
-                        return GestureDetector(
-                          onLongPress: () => setState(() {}),
-                          onTap: () => setState(() {}),
-                          child: ChatScreenCard(
-                              model: model,
-                              myuser: model.isSearching
-                                  ? model.searchlist[index]
-                                  : model.list[index]),
-                        );
+                        return ChatScreenCard(
+                            model: model,
+                            myuser: model.isSearching
+                                ? model.searchlist[index]
+                                : model.list[index]);
                       },
                     );
                   }
