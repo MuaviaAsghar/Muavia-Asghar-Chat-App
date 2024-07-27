@@ -15,18 +15,18 @@ class Themeprovider extends ChangeNotifier {
     if (_themeData == lightmode) {
       const AppBarTheme(
         systemOverlayStyle: SystemUiOverlayStyle(
-          statusBarIconBrightness: Brightness.light,
-          statusBarBrightness: Brightness.light,
-          statusBarColor: Colors.white,
+          statusBarIconBrightness: Brightness.dark,
+          statusBarBrightness: Brightness.dark,
+          statusBarColor: Colors.black,
         ),
       );
       themeData = darkmode;
     } else {
       const AppBarTheme(
         systemOverlayStyle: SystemUiOverlayStyle(
-          statusBarIconBrightness: Brightness.dark,
-          statusBarBrightness: Brightness.dark,
-          statusBarColor: Colors.black,
+          statusBarIconBrightness: Brightness.light,
+          statusBarBrightness: Brightness.light,
+          statusBarColor: Colors.white,
         ),
       );
       themeData = lightmode;

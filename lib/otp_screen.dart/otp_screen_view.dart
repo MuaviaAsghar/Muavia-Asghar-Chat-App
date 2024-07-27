@@ -72,16 +72,18 @@ class _OtpScreenViewState extends State<OtpScreenView>
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Container( decoration: BoxDecoration(
-              gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: Provider.of<Themeprovider>(context).themeData == darkmode
-                ? [const Color(0xff2b5876), const Color(0xff4e4376)]
-                : [const Color(0xfffff1eb), const Color(0xfface0f9)],
-          )),
-        child: Scaffold(backgroundColor: Colors.transparent,
+    return Container(
+      decoration: BoxDecoration(
+          gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: Provider.of<Themeprovider>(context).themeData == darkmode
+            ? [const Color(0xff2b5876), const Color(0xff4e4376)]
+            : [const Color(0xfffff1eb), const Color(0xfface0f9)],
+      )),
+      child: SafeArea(
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
           key: model.scaffoldMessengerKey,
           appBar: AppBar(
             backgroundColor: Colors.transparent,

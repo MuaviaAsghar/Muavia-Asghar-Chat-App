@@ -1,16 +1,18 @@
 import 'dart:developer';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:say_anything_to_muavia/widgets/theme.dart';
+
 import '../Login/login_screen_view.dart';
 import '../Models/json_model.dart';
 import '../chat_screen/chat_screen_view.dart';
 import '../profile_screen/profile_screen.dart';
 import '../setting_screen/setting_screen_view.dart';
 import '../widgets/chat_screen.dart';
+import '../widgets/custom_app_bar.dart';
 import '../widgets/theme_provider.dart';
 import 'home_screen_model.dart';
 
@@ -31,73 +33,6 @@ class _HomeScreenViewState extends State<HomeScreenView> {
     model.auth.addChatbotUser();
     model.auth.getSelfInfo();
     _loadChatUsers();
-  }
-
-  Widget customAppBar() {
-    return Consumer<HomeScreenModel>(
-      builder: (BuildContext context, model, Widget? child) {
-        return PreferredSize(
-          preferredSize: const Size.fromHeight(kToolbarHeight),
-          child: model.isSelectingTile
-              ? AppBar(
-                  backgroundColor: Colors.transparent,
-                  actions: [
-                    IconButton(
-                      onPressed: () {
-                        model.selectedItems.clear();
-                        model.isSelectingTile = false;
-                      },
-                      icon: const Icon(Icons.delete),
-                    ),
-                  ],
-                  leading: IconButton(
-                    onPressed: () {
-                      model.selectedItems.clear();
-                      model.isSelectingTile = false;
-                    },
-                    icon: const Icon(CupertinoIcons.clear_circled_solid),
-                  ),
-                )
-              : AppBar(
-                  backgroundColor: Colors.transparent,
-                  actions: [
-                    IconButton(
-                      onPressed: () {
-                        model.isSearching = !model.isSearching;
-                      },
-                      icon: Icon(model.isSearching
-                          ? CupertinoIcons.clear_circled_solid
-                          : Icons.search),
-                    )
-                  ],
-                  title: model.isSearching
-                      ? TextField(
-                          decoration: const InputDecoration(
-                              border: InputBorder.none,
-                              hintText: 'Name, Email, ...'),
-                          autofocus: true,
-                          style:
-                              const TextStyle(fontSize: 16, letterSpacing: 0.5),
-                          onChanged: (val) {
-                            model.searchlist.clear();
-                            for (var i in model.list) {
-                              if (i.name
-                                      .toLowerCase()
-                                      .contains(val.toLowerCase()) ||
-                                  i.email
-                                      .toLowerCase()
-                                      .contains(val.toLowerCase())) {
-                                model.searchlist.add(i);
-                              }
-                            }
-                          },
-                        )
-                      : const Text("ChatApp"),
-                  centerTitle: true,
-                ),
-        );
-      },
-    );
   }
 
   void _showUserDialog(BuildContext context) {
@@ -188,7 +123,7 @@ class _HomeScreenViewState extends State<HomeScreenView> {
             child: Scaffold(
               backgroundColor: Colors.transparent,
               appBar: AppBar(
-                flexibleSpace: customAppBar(),
+                flexibleSpace: const SafeArea(child: CustomAppBar()),
               ),
               floatingActionButton: FloatingActionButton(
                 onPressed: () async {

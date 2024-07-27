@@ -1,10 +1,8 @@
 import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:say_anything_to_muavia/Home/home_screen_model.dart';
 
 import '../Models/json_model.dart';
@@ -25,17 +23,15 @@ class ChatScreenCard extends StatefulWidget {
 }
 
 class _ChatScreenCardState extends State<ChatScreenCard> {
-  final customCacheManager = CacheManager(Config('customcachekey',
-      stalePeriod: const Duration(days: 30), maxNrOfCacheObjects: 1000));
-
   void handleSelection(ChatUser user) {
-    setState(() {
-      if (widget.model.selectedItems.contains(user)) {
-        widget.model.removeSelectedItem(user);
-      } else {
-        widget.model.addSelectedItem(user);
-      }
-    });
+    if (widget.model.selectedItems.contains(user)) {
+      log("handle selection callinh");
+      widget.model.removeSelectedItem(user);
+      setState(() {});
+    } else {
+      widget.model.addSelectedItem(user);
+      setState(() {});
+    }
   }
 
   @override
@@ -71,7 +67,7 @@ class _ChatScreenCardState extends State<ChatScreenCard> {
               borderRadius: BorderRadius.circular(
                   MediaQuery.sizeOf(context).height * .03),
               child: CachedNetworkImage(
-                cacheManager: customCacheManager,
+                cacheManager: widget.model.customCacheManager,
                 key: UniqueKey(),
                 width: MediaQuery.sizeOf(context).height * .055,
                 height: MediaQuery.sizeOf(context).height * .055,

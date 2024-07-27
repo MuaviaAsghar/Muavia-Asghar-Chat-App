@@ -7,12 +7,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-
 import 'package:say_anything_to_muavia/Home/home_screen_view.dart';
 import 'package:say_anything_to_muavia/Login/login_screen_view.dart';
-
 import 'package:say_anything_to_muavia/widgets/theme_provider.dart';
-
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'Home/home_screen_model.dart';
@@ -51,14 +48,11 @@ void main() async {
     }
   }
 
-  runApp(
-     MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => Themeprovider()),
-        ChangeNotifierProvider(create: (_) => HomeScreenModel()), // Add this line
-      ],
-    
-
+  runApp(MultiProvider(
+    providers: [
+      ChangeNotifierProvider(create: (_) => Themeprovider()),
+      ChangeNotifierProvider(create: (_) => HomeScreenModel()), // Add this line
+    ],
     child: MyApp(
       initialScreen: initialScreen,
     ),

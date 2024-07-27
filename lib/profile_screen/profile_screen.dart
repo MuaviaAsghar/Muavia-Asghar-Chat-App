@@ -2,11 +2,11 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
-
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../Home/home_screen_model.dart';
@@ -14,6 +14,8 @@ import '../Login/login_screen_view.dart';
 import '../Models/json_model.dart';
 import '../authentication/auth.dart';
 import '../widgets/dialogs/dialogs.dart';
+import '../widgets/theme.dart';
+import '../widgets/theme_provider.dart';
 
 class ProfileScreen extends StatefulWidget {
   final ChatUser? user;
@@ -56,133 +58,156 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: FocusScope.of(context).unfocus,
-      child: Scaffold(
-        appBar: AppBar(title: const Text('Profile Screen')),
-        floatingActionButton: Padding(
-          padding: const EdgeInsets.only(bottom: 10),
-          child: FloatingActionButton.extended(
-            backgroundColor: Colors.redAccent,
-            onPressed: () async {
-              Dialogs.showProgressBar(context);
-              logout(context, navigateToLogin);
-            },
-            icon: const Icon(Icons.logout),
-            label: const Text('Logout'),
-          ),
-        ),
-        body: Form(
-          key: _formKey,
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: MediaQuery.sizeOf(context).width * .05,
+      child: SafeArea(
+        child: Container(
+          decoration: BoxDecoration(
+              gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: Provider.of<Themeprovider>(context).themeData == darkmode
+                ? [const Color(0xff2b5876), const Color(0xff4e4376)]
+                : [const Color(0xfffff1eb), const Color(0xfface0f9)],
+          )),
+          child: Scaffold(
+            appBar: AppBar(title: const Text('Profile Screen')),
+            floatingActionButton: Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: FloatingActionButton.extended(
+                backgroundColor: Colors.redAccent,
+                onPressed: () async {
+                  Dialogs.showProgressBar(context);
+                  logout(context, navigateToLogin);
+                },
+                icon: const Icon(Icons.logout),
+                label: const Text('Logout'),
+              ),
             ),
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  SizedBox(
-                    width: MediaQuery.sizeOf(context).width,
-                    height: MediaQuery.sizeOf(context).height * .03,
-                  ),
-                  Stack(
+            body: Form(
+              key: _formKey,
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: MediaQuery.sizeOf(context).width * .05,
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
                     children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(
-                          MediaQuery.sizeOf(context).height * .1,
-                        ),
-                        child: model.image != null && model.image!.isNotEmpty
-                            ? CachedNetworkImage(
-                                cacheManager: customcCacheManager,
-                    key: UniqueKey(),
-                                width: MediaQuery.sizeOf(context).height * .2,
-                                height: MediaQuery.sizeOf(context).height * .2,
-                                fit: BoxFit.cover,
-                                imageUrl: model.image!,
-                                errorWidget: (context, url, error) =>
-                                    CircleAvatar(
-                                  child: Text(
-                                    model.name != null ? model.name![0] : '',
-                                  ),
-                                ),
-                              )
-                            : CircleAvatar(
-                                radius: MediaQuery.sizeOf(context).height * .1,
-                                child: Text(
-                                  model.name != null ? model.name![0] : '',
-                                ),
-                              ),
+                      SizedBox(
+                        width: MediaQuery.sizeOf(context).width,
+                        height: MediaQuery.sizeOf(context).height * .03,
                       ),
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: MaterialButton(
-                          elevation: 1,
-                          onPressed: _showBottomSheet,
-                          shape: const CircleBorder(),
-                          color: Colors.white,
-                          child: const Icon(Icons.edit, color: Colors.blue),
+                      Stack(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(
+                              MediaQuery.sizeOf(context).height * .1,
+                            ),
+                            child: model.image != null &&
+                                    model.image!.isNotEmpty
+                                ? CachedNetworkImage(
+                                    cacheManager: customcCacheManager,
+                                    key: UniqueKey(),
+                                    width:
+                                        MediaQuery.sizeOf(context).height * .2,
+                                    height:
+                                        MediaQuery.sizeOf(context).height * .2,
+                                    fit: BoxFit.cover,
+                                    imageUrl: model.image!,
+                                    errorWidget: (context, url, error) =>
+                                        CircleAvatar(
+                                      child: Text(
+                                        model.name != null
+                                            ? model.name![0]
+                                            : '',
+                                      ),
+                                    ),
+                                  )
+                                : CircleAvatar(
+                                    radius:
+                                        MediaQuery.sizeOf(context).height * .1,
+                                    child: Text(
+                                      model.name != null ? model.name![0] : '',
+                                    ),
+                                  ),
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: MaterialButton(
+                              elevation: 1,
+                              onPressed: _showBottomSheet,
+                              shape: const CircleBorder(),
+                              color: Colors.white,
+                              child: const Icon(Icons.edit, color: Colors.blue),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: MediaQuery.sizeOf(context).height * .03),
+                      Text(
+                        widget.user!.email,
+                        style: const TextStyle(
+                            color: Colors.black54, fontSize: 16),
+                      ),
+                      SizedBox(height: MediaQuery.sizeOf(context).height * .05),
+                      TextFormField(
+                        controller: nameController,
+                        validator: (val) => val != null && val.isNotEmpty
+                            ? null
+                            : 'Required Field',
+                        decoration: InputDecoration(
+                          prefixIcon:
+                              const Icon(Icons.person, color: Colors.blue),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          hintText: 'eg. Happy Singh',
+                          label: const Text('Name'),
                         ),
+                      ),
+                      SizedBox(height: MediaQuery.sizeOf(context).height * .02),
+                      TextFormField(
+                        controller: aboutController,
+                        validator: (val) => val != null && val.isNotEmpty
+                            ? null
+                            : 'Required Field',
+                        decoration: InputDecoration(
+                          prefixIcon: const Icon(Icons.info_outline,
+                              color: Colors.blue),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          hintText: 'eg. Feeling Happy',
+                          label: const Text('About'),
+                        ),
+                      ),
+                      SizedBox(height: MediaQuery.sizeOf(context).height * .05),
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          shape: const StadiumBorder(),
+                          minimumSize: Size(
+                            MediaQuery.sizeOf(context).width * .5,
+                            MediaQuery.sizeOf(context).height * .06,
+                          ),
+                        ),
+                        onPressed: () {
+                          if (_formKey.currentState!.validate()) {
+                            _formKey.currentState!.save();
+                            _auth
+                                .updateUserInfo(
+                                    nameController.text, aboutController.text)
+                                .then((value) {
+                              Dialogs.showSnackbar(
+                                  context, 'Profile Updated Successfully!');
+                            });
+                          }
+                        },
+                        icon: const Icon(Icons.edit, size: 28),
+                        label: const Text('UPDATE',
+                            style: TextStyle(fontSize: 16)),
                       ),
                     ],
                   ),
-                  SizedBox(height: MediaQuery.sizeOf(context).height * .03),
-                  Text(
-                    widget.user!.email,
-                    style: const TextStyle(color: Colors.black54, fontSize: 16),
-                  ),
-                  SizedBox(height: MediaQuery.sizeOf(context).height * .05),
-                  TextFormField(
-                    controller: nameController,
-                    validator: (val) =>
-                        val != null && val.isNotEmpty ? null : 'Required Field',
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.person, color: Colors.blue),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      hintText: 'eg. Happy Singh',
-                      label: const Text('Name'),
-                    ),
-                  ),
-                  SizedBox(height: MediaQuery.sizeOf(context).height * .02),
-                  TextFormField(
-                    controller: aboutController,
-                    validator: (val) =>
-                        val != null && val.isNotEmpty ? null : 'Required Field',
-                    decoration: InputDecoration(
-                      prefixIcon:
-                          const Icon(Icons.info_outline, color: Colors.blue),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      hintText: 'eg. Feeling Happy',
-                      label: const Text('About'),
-                    ),
-                  ),
-                  SizedBox(height: MediaQuery.sizeOf(context).height * .05),
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      shape: const StadiumBorder(),
-                      minimumSize: Size(
-                        MediaQuery.sizeOf(context).width * .5,
-                        MediaQuery.sizeOf(context).height * .06,
-                      ),
-                    ),
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        _formKey.currentState!.save();
-                        _auth
-                            .updateUserInfo(
-                                nameController.text, aboutController.text)
-                            .then((value) {
-                          Dialogs.showSnackbar(
-                              context, 'Profile Updated Successfully!');
-                        });
-                      }
-                    },
-                    icon: const Icon(Icons.edit, size: 28),
-                    label: const Text('UPDATE', style: TextStyle(fontSize: 16)),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
