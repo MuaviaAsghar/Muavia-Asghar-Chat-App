@@ -29,7 +29,75 @@ class _HomeScreenViewState extends State<HomeScreenView> {
     super.initState();
     model = HomeScreenModel();
     model.auth.addChatbotUser();
+    model.auth.getSelfInfo();
     _loadChatUsers();
+  }
+
+  Widget customAppBar() {
+    return Consumer<HomeScreenModel>(
+      builder: (BuildContext context, model, Widget? child) {
+        return PreferredSize(
+          preferredSize: const Size.fromHeight(kToolbarHeight),
+          child: model.isSelectingTile
+              ? AppBar(
+                  backgroundColor: Colors.transparent,
+                  actions: [
+                    IconButton(
+                      onPressed: () {
+                        model.selectedItems.clear();
+                        model.isSelectingTile = false;
+                      },
+                      icon: const Icon(Icons.delete),
+                    ),
+                  ],
+                  leading: IconButton(
+                    onPressed: () {
+                      model.selectedItems.clear();
+                      model.isSelectingTile = false;
+                    },
+                    icon: const Icon(CupertinoIcons.clear_circled_solid),
+                  ),
+                )
+              : AppBar(
+                  backgroundColor: Colors.transparent,
+                  actions: [
+                    IconButton(
+                      onPressed: () {
+                        model.isSearching = !model.isSearching;
+                      },
+                      icon: Icon(model.isSearching
+                          ? CupertinoIcons.clear_circled_solid
+                          : Icons.search),
+                    )
+                  ],
+                  title: model.isSearching
+                      ? TextField(
+                          decoration: const InputDecoration(
+                              border: InputBorder.none,
+                              hintText: 'Name, Email, ...'),
+                          autofocus: true,
+                          style:
+                              const TextStyle(fontSize: 16, letterSpacing: 0.5),
+                          onChanged: (val) {
+                            model.searchlist.clear();
+                            for (var i in model.list) {
+                              if (i.name
+                                      .toLowerCase()
+                                      .contains(val.toLowerCase()) ||
+                                  i.email
+                                      .toLowerCase()
+                                      .contains(val.toLowerCase())) {
+                                model.searchlist.add(i);
+                              }
+                            }
+                          },
+                        )
+                      : const Text("ChatApp"),
+                  centerTitle: true,
+                ),
+        );
+      },
+    );
   }
 
   void _showUserDialog(BuildContext context) {
@@ -119,72 +187,9 @@ class _HomeScreenViewState extends State<HomeScreenView> {
             )),
             child: Scaffold(
               backgroundColor: Colors.transparent,
-              appBar: model.isSelectingTile
-                  ? AppBar(
-                      backgroundColor: Colors.transparent,
-                      actions: [
-                        IconButton(
-                          onPressed: () {
-                            setState(() {
-                              model.selectedItems.clear();
-                              model.isSelectingTile = false;
-                            });
-                          },
-                          icon: const Icon(Icons.delete),
-                        ),
-                      ],
-                      leading: IconButton(
-                        onPressed: () {
-                          setState(() {
-                            model.selectedItems.clear();
-                            model.isSelectingTile = false;
-                          });
-                        },
-                        icon: const Icon(CupertinoIcons.clear_circled_solid),
-                      ),
-                    )
-                  : AppBar(
-                      backgroundColor: Colors.transparent,
-                      actions: [
-                        IconButton(
-                          onPressed: () {
-                            setState(() {
-                              model.isSearching = !model.isSearching;
-                            });
-                          },
-                          icon: Icon(model.isSearching
-                              ? CupertinoIcons.clear_circled_solid
-                              : Icons.search),
-                        )
-                      ],
-                      title: model.isSearching
-                          ? TextField(
-                              decoration: const InputDecoration(
-                                  border: InputBorder.none,
-                                  hintText: 'Name, Email, ...'),
-                              autofocus: true,
-                              style: const TextStyle(
-                                  fontSize: 16, letterSpacing: 0.5),
-                              onChanged: (val) {
-                                model.searchlist.clear();
-                                for (var i in model.list) {
-                                  if (i.name
-                                          .toLowerCase()
-                                          .contains(val.toLowerCase()) ||
-                                      i.email
-                                          .toLowerCase()
-                                          .contains(val.toLowerCase())) {
-                                    model.searchlist.add(i);
-                                  }
-                                  setState(() {
-                                    model.searchlist;
-                                  });
-                                }
-                              },
-                            )
-                          : const Text("ChatApp"),
-                      centerTitle: true,
-                    ),
+              appBar: AppBar(
+                flexibleSpace: customAppBar(),
+              ),
               floatingActionButton: FloatingActionButton(
                 onPressed: () async {
                   await _loadAllUsers();
@@ -292,7 +297,7 @@ class _HomeScreenViewState extends State<HomeScreenView> {
                               child: model.image != null &&
                                       model.image!.isNotEmpty
                                   ? CachedNetworkImage(
-                                      cacheManager: model.customcCacheManager,
+                                      cacheManager: model.customCacheManager,
                                       key: UniqueKey(),
                                       width:
                                           MediaQuery.sizeOf(context).width * 2,
@@ -386,52 +391,3 @@ class _HomeScreenViewState extends State<HomeScreenView> {
     );
   }
 }
-
-
-
-
-//   showDialog<String>(
-// // Suggested code may be subject to a license. Learn more: ~LicenseLog:74299352.
-//                 context: context,
-//                 builder: (BuildContext context) => Dialog(
-//                   child: Padding(
-//                     padding: const EdgeInsets.all(8.0),
-//                     child: Column(
-//                       mainAxisSize: MainAxisSize.min,
-//                       mainAxisAlignment: MainAxisAlignment.center,
-//                       children: <Widget>[
-//                         const Text('Select a user to chat with:'),
-//                         const SizedBox(height: 15),
-//                         ListView.builder(
-//                           shrinkWrap: true,
-//                           itemCount: _allUsers.length,
-//                           itemBuilder: (context, index) {
-//                             return ListTile(
-//                               title: Text(_allUsers[index].name),
-//                               subtitle: Text(_allUsers[index].email),
-//                               onTap: () async {
-//                                 await model.addChatUser(_allUsers[index]);
-//                                 if (context.mounted) {
-//                                   Navigator.pop(context);
-//                                   Navigator.push(
-//                                       context,
-//                                       MaterialPageRoute<void>(
-//                                           builder: (BuildContext context) =>
-//                                               ChatScreenView(
-//                                                   user: _allUsers[index])));
-//                                 }
-//                               },
-//                             );
-//                           },
-//                         ),
-//                         TextButton(
-//                           onPressed: () {
-//                             Navigator.pop(context);
-//                           },
-//                           child: const Text('Close'),
-//                         ),
-//                       ],
-//                     ),
-//                   ),
-//                 ),
-//               );

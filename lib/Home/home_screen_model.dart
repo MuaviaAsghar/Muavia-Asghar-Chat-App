@@ -9,7 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../authentication/auth.dart';
 
-class HomeScreenModel {
+class HomeScreenModel extends ChangeNotifier  {
   final AuthService auth = AuthService();
   final _firebaseauth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
@@ -23,17 +23,46 @@ class HomeScreenModel {
   HomeScreenModel() {
     userId = _firebaseauth.currentUser?.uid;
   }
-  final customcCacheManager = CacheManager(Config('customcachekey',
-      stalePeriod: const Duration(days: 30), maxNrOfCacheObjects: 100));
-
+  
+  
   late final List<ChatUser> list = [];
-
   final List<ChatUser> searchlist = [];
   bool isSearching = false;
   List<ChatUser> allUsers = [];
   List<String> chatUserIds = [];
-  List<ChatUser> selectedItems = [];
   bool isSelectingTile = false;
+
+  List<ChatUser> _selectedItems = [];
+  List<ChatUser> get selectedItems => _selectedItems;
+
+  set selectedItems(List<ChatUser> items) {
+    _selectedItems = items;
+    notifyListeners();
+  }
+
+  void addSelectedItem(ChatUser user) {
+    _selectedItems.add(user);
+    isSelectingTile = true;
+    notifyListeners();
+  }
+
+  void removeSelectedItem(ChatUser user) {
+    _selectedItems.remove(user);
+    if (_selectedItems.isEmpty) {
+      isSelectingTile = false;
+    }
+    notifyListeners();
+  }
+  final customCacheManager = CacheManager(Config('customcachekey',
+    stalePeriod: const Duration(days: 30), maxNrOfCacheObjects: 100));
+  // late final List<ChatUser> list = [];
+
+  // final List<ChatUser> searchlist = [];
+  // bool isSearching = false;
+  // List<ChatUser> allUsers = [];
+  // List<String> chatUserIds = [];
+  // List<ChatUser> selectedItems = [];
+  // bool isSelectingTile = false;
   Future<void> fetchUserData() async {
     if (userId != null) {
       try {

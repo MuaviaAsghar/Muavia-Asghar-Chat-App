@@ -15,6 +15,7 @@ import 'package:say_anything_to_muavia/widgets/theme_provider.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'Home/home_screen_model.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -50,8 +51,14 @@ void main() async {
     }
   }
 
-  runApp(ChangeNotifierProvider(
-    create: (context) => Themeprovider(),
+  runApp(
+     MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => Themeprovider()),
+        ChangeNotifierProvider(create: (_) => HomeScreenModel()), // Add this line
+      ],
+    
+
     child: MyApp(
       initialScreen: initialScreen,
     ),
